@@ -1,0 +1,11 @@
+
+-Every now and then a portal spawns on the edge of the procedurally generated level
+    -The portal has an event spawned near it
+    -The player can use the portal, channeling for a medium length of time
+    -The portal teleports the player to another procedurally generated level, featuring different terrain, resources, enemies,
+    -The game saves just enough data about the previously generated levels and key structures so that the player can return to this portal and teleport back to the last one in the same location
+
+-"Your world feels so stable until one day the dam breaks and you suddenly realize it really isn't."
+-Worlds on the edge of the Crystal Thread break down and return to chaos and energy
+    -In their final eons the boundaries between them break down, forming traversable tears
+    -The older and more destroyed worlds have a lot of tears

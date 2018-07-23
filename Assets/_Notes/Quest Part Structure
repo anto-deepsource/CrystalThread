@@ -1,0 +1,52 @@
+
+Quest Part Structure
+    -A quest part consists of
+        -A 'trigger' which classifies it as start part, a resolution part, and/or describes the events that could trigger the quest part
+            -A start part won't have a description of triggering events and are simply all possible parts when choosing a new quest
+            -A quest part has only one broad way of being triggered
+            -Or if a quest part is not a start or resolution, it can be 'filler' which allows it to be triggered by any one of several broad events
+            -Are listed at the top of the text script in a 'Trigger' section
+                -An optional 'Start', 'Resolution', 'Climax', or 'Filler' tag
+                -A string describing an event
+                    -no intrinsic value except to group the quest part with other quest parts that trigger from the same thing
+        -Zero or more conditions that must be true in order for this quest to be valid and played
+            -Finding applicable characters and items is an automatic condition
+            -ie: the quest-giver must be assigned and not a good guy
+            -the player must've been told about a cursed item
+            -If any of the quests options have an associated cost, the player being able to afford that cost is an automatic condition
+            -Non-automatic conditions are listed in the text script after the triggers in a 'Conditions' section
+        -Several lists of various entities, seperated by type, that are part of the quest part:
+            -Characters, items, locations
+            -Identifying them using aliases
+            -Pulled from the world database based on attributes
+            -Can specify new, already exists, or doesn't matter
+        -A list of all characters that are part of the quest part
+            -Pulling them from the world database at runtime based on conditions and character attributes
+            -Can specify that the character must already exist, must be new, or doesn't matter
+            -The player has a special constant reference
+            -The quest-giver is assigned in a start quest part and gets a special constant reference
+            -An antagonist character (can be empty or reassigned) is tracked and gets a special constant reference
+        -A list of zero or more items that are part of the quest part
+            -A 'MacGuffin' item (can be empty or reassigned) is tracked and gets a special constant reference
+            -A 'One Ring' item (can be empty or reassigned) is tracked and gets a special constant reference
+        -A list of zero or more locations that are part of the quest
+            -The current location is tracked and gets a special constant reference
+            -The target location (can be empty or reassigned) is tracked and gets a special constant reference
+
+        -Zero or more actions or effects to the world that occur because of the quest
+            -Change the properties of an item
+            -Change the attributes of a character
+            -Change properties of the player, ie: resources
+            -Reassign the quest-giver, antagonist, target location
+            -References all entities by using the aliases listed previously in the quest part
+        -Two or more options given to the player that trigger further quest parts
+            -Any two connected quest parts must maintain full modularity, requiring no additional information from a previous quest part, obtaining all key information from the trigger, conditions, or reference characters
+                -Obstacle : Finding a balance between broad and interesting events with no conditions and specific high condition quest parts
+            -An option can have a cost associated with it that the player must be able to afford and pay in order to choose the option
+                -The cost can be specific or procedurally calculated at runtime based on the player's level and resources
+            -An option can have a chance for success/failure, resulting in a probability derived success quest part or failure quest part
+            -If this quest part is 'filler', an option can simply mimic the trigger that preceded and called this quest part
+                -This allows 'one off' events that can more or less go anywhere in the middle that easily go back to the original task at hand
+            -Options are led with a meta tag, telling the player which kind of option it is, the probability or the cost in quick, obvious terms
+        -A description read to the player, describing the quest and the events that unfold, filling in aliases with the specific entities name at runtime
+        -

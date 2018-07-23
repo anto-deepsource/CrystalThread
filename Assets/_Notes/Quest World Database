@@ -1,0 +1,64 @@
+
+
+Quest World Database
+-The database consists of 'entities' that have properties and relationships with one another
+    -An entity is considered to be a real, tangible thing in the world
+-An entity has a unique name or identifier
+-An entity is considered singular unless it has the property 'group'
+-Properties are one-dimensional relationships such as 'X is a truck'
+    -Is an item
+    -Is a location
+    -Is a person
+    -Is a king
+    -Is arrogant
+    -Is angry
+  -binary value, defaulting to false
+  -Have no entrinsic value outside of being used to qualify queuries
+  -can sometimes be a 'highlander' property, where only one entity in the world can have that property at any time
+-The database is remembered using a SQL-like database of lists (entities, properties) and tables (entities-properties, entities-entities * relationships )
+-Relationships are two-dimensional relationships between two entities
+    -Unidirectional unless otherwise defined
+    -Can describe one as being:
+        -contained within another
+        -a child of another
+        -a parent of another
+        -an enemy of another
+        -Goes by 'Larsen'
+        -Is in 'San Jose'
+        -is running away from player
+    -binary value, defaulting to false
+    -Are predefined
+-Complex Relationships are three-dimensional relationships between two entites that have one further property, defining the relationship
+    -X is a 'claimed' member of 'Faction 2'
+    -Y is a 'forced' wife of X
+    -The possible states of the property are predefined for each complex relationship
+
+
+-Relationships and Properties can have antonyms and synonyms where an entity having one property implies also having another and negating the opposite
+-The database can process queries that returns any and all if any entities that satisfy the query parameters
+-The database can create a new entity that fits the query parameters
+  -Draws from a pool of names appropriate for items, people, places
+  -The world can 'roll' to add new requested entities or add properties or relationships to existing entities in order to fulfill the request
+  -The world can track the frequency of new creations and will increase the likely-hood of creating new entities when it can if no new entities have been made lately, and vice-versa
+-The database can be displayed in text format in a series of noun-phrase, verb-phrase sentences
+-The database can be modified or added to by noun-phrase, verb-phrase sentences
+-The database consists of heirerchies, where some axioms exist 'globally' and some axioms exist localy depending on location or entity
+    -Entities exist global, it is the things about them that are local or global
+    -A local database can be copied, instanced, and merged
+-A fact about the world may exist redundantly in the database in more than one part to establish all the properties and relationships, such as the fact that an entity is destroyed, that it was destroyed by another entity, and that the other entity destroyed the original item
+-Under the hood, the database tracks complex data about the entities, particularly if the entity is a character
+    -Growing and decaying float values between each character corresponding to their opinion of one another on a variety of scales
+        -Modifies, adds, or removes relationships between the entities
+        -Each character has a 'perceived' value for each other characters opion of themselves
+    -Tracks and modifies their moods
+    -Tracks and modifies their internal database of the world
+    -Tracks resources
+
+
+Queries
+    -A quest world query consists of a series of statements that can request a number of entities specifically or any that fit certain conditions
+    -Statements can be joined with and or or
+        -The intersection or union of the results
+    -a statement reads similiar to an SQL statement
+        -"select a character that is an enemy"
+    -a statement can further request that if one is not found, one is created

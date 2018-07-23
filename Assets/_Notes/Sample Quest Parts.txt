@@ -1,0 +1,151 @@
+
+Sample Quest Parts:
+
+-Initial Start Parts:
+	-NPC is a quest-giver, waiting for the player to talk to them:
+		-NPC spawns in an appropriate point, indicates that it has a quest, and the player stops and interacts with them
+			-asks the player to:
+				-retrieve a unique key item and bring it back
+				-accompany them to find a unique key item
+				-accompany them to confront a specific npc
+				-kill a specific npc
+				-save a specific npc
+				-is injured or imprisoned and needs to be saved
+			-offers to:
+				-restore a broken key item that the player has found
+				-uncurse a key item that the player has previously found
+				-give the player a lead on an enemy that previously escaped
+
+	-The player finds a note or unique key item
+		-Has a clue or a location for the player to go somewhere
+			-give the player a lead on an enemy that previously escaped
+		-A strange energy emits from it and once activated
+			-Releases a friendly npc who is a quest-giver
+			-Releases an unfriendly npc who attacks the player
+			-Releases an unfriendly npc who forces the player to take a quest
+			-Teleports the player to a different location that they must escape
+
+	-The player enters a location that is 'off limits'
+		-Nearby enemies attack the player
+
+	-The player falls in a trap
+		-A damsel in distress -> ambush
+		-A conviently placed treasure chest -> ambush
+		-A previously scorned quest-giver or escaped enemy ambushes the player
+
+
+-Search Parts:
+	-The player kills a quest part central character
+		-Who they SHOULD have killed:
+			-Twist: The killed npc is revealed to be not the person the player should have killed
+			-They aren't quite dead, an ally npc deals the final blow
+				-Chance for that ally to become an enemy
+			-They aren't quite dead, an enemy npc deals the final blow
+				-Chance for that enemy to become an ally
+			-
+
+		-Who they should NOT have killed:
+			-A different npc vows revenge and tries to kill the player
+			-A spectator npc runs for help to return to kill the player
+			-If the npc had a key item:
+				-The item activates:
+					-Releasing a large enemy
+						-Attacks the player
+						-Attacks the community
+						-Runs away, spawning enemies until attacking the player in the future
+					-Imprisons a nearby npc
+				-The item explodes
+				-The item is simply destroyed
+			-Their body is left behind and if found later has an effect on the faction
+				-Has a key item that begins another quest
+			-Their death causes the location to start falling apart
+			-Their death causes an ancient evil to be released
+			-They aren't quite dead, an ally npc deals the final blow
+				-Chance for that ally to become an enemy
+			-They aren't quite dead, an enemy npc deals the final blow
+				-Chance for that enemy to become an ally
+
+	-The player declines to kill a specific npc
+		-The quest-giver accuses the player of working for them and attacks the player
+		-The target npc arrives immediately and begins attacking the quest-giver but not the player
+		-A different quest-giver approaches the player some time later and requests that they kill the original quest-giver
+		-The target npc appears in the vaccinity and is an asshole
+
+	-The player arrives at the objective location with intent
+		-retrieve a key item
+			-the item is guarded by enemies
+			-the item is within a maze
+			-the item is hidden in inspectable spots
+			-the item has been destroyed already
+		-save a specific npc
+			-the target npc has been cursed and attacks the player
+			-the target npc is revealed to be the bad guy -> turns into a confrontation
+			-the target npc is badly hurt and must be carried out
+			-the target npc is already dead
+			-the target npc is imprisoned and guarded by enemies
+			-the target npc is trapped within an item -> turns into a retrieve item
+		-confront a specific npc
+			-the target npc is there and is prepared to fight
+			-the target npc is there and reluctant to fight
+			-the target npc is there and is ready to bargain
+			-the target npc is somewhere hiding in the location
+			-the target npc is performing a ritual to
+				-unleash a great enemy
+				-create a powerful weapon
+				-kill a specific npc
+				-kill a town
+
+	-The player acquires the key item they were looking for
+		-An enemy arrives to take it
+			-Runs away if manages to steal it
+			-Destroys the item if manages to steal it
+		-An enemy arrives to attack the player
+		-The quest-giver shows up and asks the player to hand it over
+			-Player gives it to the quest-giver
+				-Twist: the quest-giver was a bad guy and shouldn't have been given the item
+				-The quest-giver thanks the player
+				-The quest-giver asks the player to accompany them back to use it
+			-Player refuses to give it to the quest-giver
+				-The quest-giver becomes mad and attacks
+				-The quest-giver is understanding and leaves, to later try and steal it
+				-The quest-giver tries to bargain, offering money and resources
+				-The quest-giver follows the player, pleading, until they run out of health
+	-The player dies
+		-They are revived by
+			-New allies
+			-Old allies
+			-Good samaritans
+			-Thiefs
+			-Extortionists
+			-Slavers
+			-Enemies
+		-An unknown power erupts from within the player, saving them and killing all enemies
+		-An ally shows up to save the player
+		-A larger enemy shows up, uninterested in the player, attacking the enemy that is killing the player, inadvertenty saving the player
+
+	-The player succumbs to an ambush and is captured
+		-
+
+	-The player talks to third party npcs about
+		-A monster in the area
+		-A specific
+			-Enemy
+			-Ally
+			-Faction
+			-Location
+			-Item
+
+
+-Resolution:
+	-The player fails to successfully rescue a specific npc and they die
+		-Upon the next interaction with the quest-giver
+			-If the quest-giver knows that the target npc is dead
+				-They become understanding
+				-They become angry
+				-They become violent
+				-They search for the body in order to ressurect it
+			-If the quest-giver does not know that the target npc is dead
+				-Asks player where they are
+				-They begin searching for them
+
+	-The player kills a quest part central

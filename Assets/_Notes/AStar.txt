@@ -1,0 +1,304 @@
+﻿using System;
+using System.Collections.Generic;
+
+class AStar {
+
+	HashTable<int,Node> nodes = new HashTable<int,Node>();
+
+	List<NodeWork> openList = new List<NodeWork>();
+	List<NodeWork> closedList = new List<NodeWork>();
+
+	public AStar(bool[] wallData) {
+		GenerateMap(wallData);
+	}
+
+	
+
+	void GenerateMap(bool[] wallData) {
+		nodes.Clear();
+
+		for (int i = 0; i < wallData.Length; i++) {
+			//for (int i = 0; i < 180; i++) {
+			//Console.WriteLine("AStar.GenerateMap i: " + i.ToString());
+			if (!wallData[i]) {
+
+				int x = GameUtils.IndexToX(i);
+				int y = GameUtils.IndexToY(i);
+				if (GameUtils.IsBorderSpace(x, y))
+					continue;
+				AddNewNode(x, y);
+				int left = i - 1;
+				if (
+					!GameUtils.IsBorderSpace(x - 1, y) &&
+					left >= 0
+					&& left % GameSettings.BoardWidth != GameSettings.BoardWidth -1
+					&& !wallData[left])
+					CreateBidirectionalEdge(i, left);
+				int up = i - GameSettings.BoardWidth;
+				if (
+					!GameUtils.IsBorderSpace(x, y - 1) &&
+					up >= 0 && !wallData[up])
+					CreateBidirectionalEdge(i, up);
+
+			}
+		}
+		
+	}
+
+	Node AddNewNode( float x, float y ) {
+		Node newNode = new Node(x, y );
+		nodes.Add(GameUtils.CoordToIndex((int)x,(int)y),newNode);
+		return newNode;
+	}
+
+	public class Node {
+		public float x = 0;
+		public float y = 0;
+
+		public List<Edge> edges = new List<Edge>();
+
+		public Node( float x, float y) {
+			this.x = x;
+			this.y = y;
+		}
+	}
+
+	public class NodeWork {
+		public Node node;
+
+		public float cost = 0;
+		public float heuristic = 0;
+
+		public NodeWork cameFrom = null;
+
+		public float TotalEstimatedCost() {
+			return cost + heuristic;
+		}
+	}
+
+	public class Edge {
+		public Node start;
+		public Node end;
+		//public float cost = 1;
+
+		public Edge(Node start, Node end) {
+			this.start = start;
+			this.end = end;
+		}
+
+		//public float Cost() {
+		//	return GetDistance(start, end);
+		//}
+	}
+
+	public void CreateBidirectionalEdge(Node left, Node right) {
+		Edge ga = new Edge(left, right);
+		left.edges.Add(ga);
+		Edge gb = new Edge(right, left);
+		right.edges.Add(gb);
+	}
+
+	public void CreateBidirectionalEdge(int leftIndex, int rightIndex) {
+		Node left = GetNodeByIndex(leftIndex);
+		Node right = GetNodeByIndex(rightIndex);
+		CreateBidirectionalEdge(left, right);
+	}
+
+	//public void CreateBidirectionalEdge(String leftName, String rightName) {
+	//	Node left = GetNodeByName(leftName);
+	//	Node right = GetNodeByName(rightName);
+	//	CreateBidirectionalEdge(left, right);
+	//}
+
+	//Node GetNodeByName( String name ) {
+
+	//	foreach( Node node in nodes ) {
+	//		if (node.name.Equals(name))
+	//			return node;
+	//	}
+	//	//throw new Exception("Couldn't find node " + name );
+	//	return null;
+	//}
+
+	Node GetNodeByCoord( int x, int y ) {
+		Node node = null;
+		if (nodes.TryGetValue(GameUtils.CoordToIndex(x, y), out node)) {
+			//Console.WriteLine("AStar.GetNodeByCoord: (" + node.x + ", " + node.y + ")");
+			return node;
+		}
+		//throw new Exception("Couldn't find node " + name );
+		return null;
+	}
+
+	Node GetNodeByIndex(int index) {
+		Node node = null;
+		if (nodes.TryGetValue(index, out node)) {
+			//Console.WriteLine("AStar.GetNodeByIndex: i:" + index + " (" + node.x + ", " + node.y + ")");
+			return node;
+		}
+			
+		//throw new Exception("Couldn't find node " + name );
+		return null;
+	}
+
+	public static float GetDistance(Node left, Node right) {
+		if (left == null || right == null)
+			return 0.0f;
+		float x = left.x - right.x;
+		float y = left.y - right.y;
+		return (float)Math.Sqrt(x * x + y * y);
+	}
+
+	public float GetHeuristic( Node from, Node to ) {
+		return Math.Abs(from.x - to.x) + Math.Abs(from.y - to.y);
+		//return GetDistance(from, to);
+	}
+
+	NodeWork EvaluateNode( Node node, NodeWork lastWork, Node endNode ) {
+		NodeWork newWork = new NodeWork();
+		newWork.node = node;
+		newWork.cameFrom = lastWork;
+		newWork.cost = lastWork.cost + GetDistance(node, lastWork.node);
+		newWork.heuristic = GetHeuristic(node, endNode);
+
+		return newWork;
+	}
+
+	NodeWork GetBestOpenNode() {
+		if (openList.Count == 0)
+			return null;
+		NodeWork best = openList[0];
+		foreach( NodeWork work in openList ) {
+			if (work.TotalEstimatedCost() < best.TotalEstimatedCost())
+				best = work;
+		}
+		//int before = openList.Count;
+		openList.Remove(best);
+		//Console.WriteLine("GetBestOpenNode, before: {0}, after: {1}", before, openList.Count);
+		return best;
+	}
+
+	NodeWork CheckOpenListForNode( Node node ) {
+		foreach( NodeWork work in openList )
+			if ( work.node == node )
+				return work;
+		return null;
+	}
+
+	NodeWork CheckClosedListForNode(Node node) {
+		foreach (NodeWork work in closedList)
+			if (work.node == node)
+				return work;
+		return null;
+	}
+
+	//List<NodeWork> processedList = new List<NodeWork>();
+
+	//bool IsProcessed( Node node ) {
+	//	foreach (NodeWork work in processedList)
+	//		if (work.node == node)
+	//			return true;
+	//	return false;
+	//}
+
+	public int[] GetNextMove( int startX, int startY, int endX, int endY ) {
+		openList.Clear();
+		closedList.Clear();
+		//processedList.Clear();
+
+		Node start = GetNodeByCoord(startX, startY);
+		if (start == null)
+			//return String.Format("Could not find start node at ({0},{1})",startX,startY);
+			//throw new Exception(String.Format( "Could not find start node at ({0},{1})", startX, startY)) ;
+			return new int[] { 0, 0 };
+		Node end = GetNodeByCoord(endX, endY);
+		if (end == null)
+			//return String.Format("Could not find end node at ({0},{1})", endX, endY);
+			//throw new Exception(String.Format("Could not find end node at ({0},{1})", endX, endY));
+			return new int[] { 0, 0 };
+		NodeWork work = EvaluateNode(start, new NodeWork(), end);
+		openList.Add(work);
+
+		//Console.WriteLine("GetPath ({0},{1}) -> ({2},{3})", start.x, start.y,end.x,end.y);
+
+		while ( openList.Count > 0 ) {
+			work = GetBestOpenNode();
+			// lets check if this is the node we're looking for
+			if ( work.node == end ) {
+				// then we're done
+				// leave work = work and break
+				break;
+			}
+			//Console.WriteLine("Processing Node ({0},{1})", work.node.x, work.node.y);
+			//if ( IsProcessed(work.node) )
+			//	Console.WriteLine("Already processed ({0},{1})", work.node.x,work.node.y);
+			//processedList.Add(work);
+
+			//Console.WriteLine("Node " + "(" + work.node.x.ToString() + "," + work.node.y.ToString() + "), ");
+			//Console.WriteLine("Openlist size: {0} ", openList.Count );
+			//Console.WriteLine("Node edges: {0} ", work.node.edges.Count);
+
+			foreach ( Edge edge in work.node.edges ) {
+				NodeWork newWork = EvaluateNode(edge.end, work, end);
+				// check if this node is already on our open list
+				NodeWork openWork = CheckOpenListForNode(edge.end);
+				if ( openWork !=null ) {
+					//Console.WriteLine("Found ({0},{1}) on open list", edge.end.x, edge.end.y);
+					// this node is already on the open list, but lets check to see if this route is better
+					if (newWork.TotalEstimatedCost() < openWork.TotalEstimatedCost()) {
+						// lets remove the one that's already there and replace it with this one
+						//Console.WriteLine("Moving from open list to open list");
+						openList.Remove(openWork);
+						openList.Add(newWork);
+					}
+					continue;
+				}
+				// check if this node is already on our closed list
+				NodeWork closedWork = CheckClosedListForNode(edge.end);
+				if (closedWork != null) {
+					//Console.WriteLine("Found ({0},{1}) on closed list", edge.end.x, edge.end.y);
+					// this node is already on the closed list, but lets check to see if this route is better
+					if (newWork.TotalEstimatedCost() < closedWork.TotalEstimatedCost()) {
+						//Console.WriteLine("Moving from closed list to open list");
+						// lets remove the one that's already there and put the new one back on the open list
+						closedList.Remove(closedWork);
+						openList.Add(newWork);
+					}
+					continue;
+				}
+				// if we got here then just add it to the open list
+				openList.Add(newWork);
+				//Console.WriteLine("Adding to open list");
+			}
+			closedList.Add(work);
+			work = null;// do this so that we know whether we've found a path at the end or just run out of nodes
+		}
+
+		if ( work == null ) {
+			// we ran out of nodes -> there isn't a path from start to end
+			//return "None";
+			return new int[] { 0, 0 };
+		}
+
+		NodeWork nextNode = work;
+
+		while( work.cameFrom.node != null ) {
+			nextNode = work;
+			work = work.cameFrom;
+			//Console.WriteLine(String.Format("nextNode: ({0}, {1})", nextNode.node.x, nextNode.node.y));
+			
+		}
+
+		return new int[] {
+			(int)nextNode.node.x - startX,
+			(int)nextNode.node.y - startY,
+		};
+
+		//String result = "";
+		//while ( work.node!=null ) {
+		//	result = "(" + work.node.x.ToString() + "," + work.node.y.ToString() + "), " + result;
+		//	work = work.cameFrom;
+		//}
+		//return result;
+	}
+}

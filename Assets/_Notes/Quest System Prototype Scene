@@ -1,0 +1,185 @@
+
+Quest System Prototype
+    -Text-based
+    -Gameplay is walls of text then binary choices
+    -Game loop:
+        -Status - the player is read a short synopsis of their character's health and level, location, and party members. The player has a few resources such a gold, food, and key items. Quest specific variables are reset
+        -Given Quest - the player is 'dealt' a random quest from the quest pool and sometimes given an option as whether to pursue or pass the quest
+            -If the player chooses to pass they re-enter the loop at Status
+        -Need - the player is given a short description of the necessary characters and events pertaining to the quest and given an objective
+        -Choice - the player is given the choice of pursuing the quest of doing something silly
+        -Roll - the game chooses from the pool an appropriate quest part based on their choice
+            -If this roll is the last one before a resolution -> picks a 'climax' quest part
+                -Otherwise may sometimes choose a 'filler'
+        -Search - the player is given a short description of the consiquences of their choice and proceeding events
+        -Choice - the player is given a choice
+            -There are usually only two
+            -They are either both morally ambiguous or equally likely as being successful (more or less)
+            -Or there is a high-risk/high-reward option and opposite
+            -Or there is some resource cost associated with the option(s)
+        -Goto back to Roll sometimes - the game will, between 1 and 3 times, re-enter the loop at 'Roll', 3 states previous, until finally dropping down to complete the loop
+        -Roll Resolution - the game chooses from the pool an appropriate quest part resolution, giving the player some reward or penalty, then re-entering the loop at 'Status'
+    -Character dialog is never used, instead the events are narrated like a textbook, describing what the characters say and feel as 'X was angry and said something mean to Y.'
+    -Obstacle - creating enough varied, interesting quest parts in order to stay fresh for several playthroughs before seeing repeat events
+    -Quest parts are pulled from the pool like a stack of shuffled cards, putting used parts in a discard pile until the deck is gone, then reshuffling
+        -If a quest part is drawn that has unmet conditions it is returned to the bottom of the deck and another is drawn
+    -A quest part can add or remove party members who join or leave the player and further participate in events
+    -Characters are created by 'rolling' including the player
+        -They get a handful of attributes and maybe relationships arbitrarily from a pool
+    -Instances of quest parts are written in an xml-like text file and stored in a specific game resource directory, being parsed and filling a database on game start
+        -using simple regex expressions that map noun phrases and verb phrases to entity aliases and properties/relationships
+        -parses and validates on load, ensuring that
+            -Aliases are initialized properly
+            -An alias or reference used in an effect, condition, or narrative is valid
+                -no duplicates initialized
+                -special references are properly overridden
+                -starts with a letter, but otherwise consists of letters, numbers, hypens, or underscores
+                -doesn't contain whitespace or special characters
+                -the condition in one alias can reference another alias, no matter which is spelled out in the script first
+                    -no self-references
+            -Any properties or relationships used in effects or conditions are valid
+                -The property is applicable to the entity type
+                -The relationship is applicable to the entity type
+                -The other entity referenced in the relationship is an applicable type
+        -Actions and conditions are human readable strings
+            -aliases must start with a letter, are case insensitive
+            -No brackets, parenthesis or special characters are needed in syntax
+                -trailing commas and periods are ignored but not prohibited
+                -actions are seperated by new lines
+            -Are formed of two parts: an alias and a verb phrase where a verb phrase is
+                -a property
+                    -[Alias] [Property]
+                -or a relationship plus the alias of another entity
+                    -[Alias] [Relationship] [Alias]
+            -are case insensitive
+            -conditions are listed without the subject entity
+                -just because its redundant
+            -special aliases are auto-initialized but can be used and added to in initialization
+                -'player' - always refers to the character that the player is controlling
+                -'quest-giver' - the character who initially gave the player the quest, possibly null
+                -'antagonist' - the main antagonist relative to the current quest, possibly null
+                -'macguffin' - the objective key item relative to the quest, possibly null
+                -'one-ring' - the evil key item, possibly null
+                -'current-location' - the most specific location currently containing the player
+                -'target-location' - the current objective location relative to the quest, possibly null
+	-An Editor window tracks and displays an overview of the quest parts, showing the number of possible quest parts per trigger/choice
+        -Can run simulated playthroughs, breaking down how long it takes on average before events start to repeat
+        -Can show all possible proceeding and preceeding quest parts for a given quest part
+        -The editor window allows quick quest part generation based on formats, selecting properties and relationships
+    -The player never experiences 'Game Over' and instead is rewarded for good choices, punished for bad choices, and the plot keeps on rolling
+        -Punishments include
+            -Drawn out narratives, forcing the player to read, wasting time
+            -Resource loss
+            -An ally dying
+            -A team mate dying
+            -An ally becoming injured
+            -A team mate becoming injured
+            -Making a new enemy
+            -Becoming injured
+
+
+    -Stretch-goal - incorporate character social interactions and relationships map
+    -Stretch-goal - incorporate 'banter' and 'development' scenes that are modular and inserted where applicable into quest parts
+    -Stretch-goal - factions
+
+Properties
+    -for Characters:
+        -is the player
+        -is a bad guy
+        -is a good guy
+        -is the current quest-giver
+        -is the current antagonist
+        -is a member of the player's team
+        -is a pussy
+        -is a badass
+        -is a bitch
+        -is an asshole
+        -is compassionate
+        -is malovolent
+        -is dead
+        -is alive
+        -is gravely injured
+        -is immobile
+        -is powerful
+        -is harmless
+        -is a man
+        -is a woman
+        -is a child
+        -is an elder
+        -is physically strong
+        -is magical
+        -is sneaky
+        -is persuasive
+        -is acrobatic/athletic
+        -is human
+        -is nonhuman
+        -is violent
+        -is nonviolent
+        -has no party members
+        -has one party member
+        -has two party members
+
+    -for Locations:
+        -is a castle
+        -is a dungeon
+        -is a village
+        -is a desert
+        -is a forest
+        -is a city
+        -is underground
+        -is hidden
+        -is a capital
+        -is a marketplace
+        -is old
+        -is new
+        -is a halogram
+        -is restricted
+        -is the player's current location
+        -is the player's current target location
+
+    -for Items:
+        -is a weapon
+        -is a relic
+        -is common
+        -is uncommon
+        -is cursed
+        -is damaged
+        -is destroyed
+        -is a magic lamp or otherwise releases something
+        -can heal injuries
+        -is poison
+        -can revive the dead
+        -is the current macguffin
+        -is the current one ring
+        -is one use or consumable
+        -is haulable
+        -is pocketable
+
+Relationships
+    -Characters -> Locations
+        -is from
+        -is in
+        -is going to
+
+    -Characters -> Items
+        -owns or holds
+        -created
+        -destroyed
+        -is bound to
+        -is looking for
+        -is destroying
+        -is creating
+
+    -Characters -> Characters
+        -is enemies with
+        -is friends with
+        -is attacking
+        -is protecting
+        -is rescuing
+        -is party members with
+
+    -Characters -> Any
+        -likes
+        -dislikes
+        -avoids
+        -is afraid of

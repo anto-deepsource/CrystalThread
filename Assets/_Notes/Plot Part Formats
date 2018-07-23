@@ -1,0 +1,38 @@
+
+
+-Plot Part Formats:
+	-Quest parts that are not initial
+        -Resolution, Climax, Search, or Filler
+        -These are the Types
+    -Used to categorize a part
+        -Formats and Types are different, a plot part has one of each
+    -Triggers and choices are based on a quest's format
+        -a choice tells the quest system to proceed using any part with the given format
+    -A format is in the form of a verb-phrase statement that represents a present-tense property or relationship that the player currently has
+        -Usually an action the player just took or is taking
+        -A unique string with no intrinsic value expect to the human creating the system
+
+-The player...
+    -kills a central character
+    -kills a monster
+    -declines to kill a central character
+    -arrives at the objective location in order to...
+        -retrieve a key item
+	    -save a central character
+        -confront a central character
+        -kill a monster
+    -acquires target key item
+    -dies
+    -succumbs to an ambush or is captured
+    -talks to a central character about...
+        -a monster
+		-a specific
+			-Enemy
+			-Ally
+			-Faction
+			-Location
+			-Item
+    -fails to successfully rescue a central character
+    -confronts an enemy
+    -sneaks up on an enemy
+    -escapes imprisonment

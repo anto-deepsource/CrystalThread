@@ -1,0 +1,9 @@
+
+[-]local path smoothing, skipping waypoints
+-local pathing and global pathing working together
+-jump on incomplete path, no initial pausing, local and global
+[-]local can connect to adjacent hextiles
+-toggling local pathing
+-local pathing knows about obstacles
+-local pathing responds to changes (ie: obstacles changing)
+-local pathing can modify global by marking tiles or edges as impassable

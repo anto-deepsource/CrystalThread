@@ -1,0 +1,22 @@
+
+-Noun phrase - A reference to an entity or entities
+	-A specific character
+	-An item
+	-A location
+	-A faction
+	-An event
+	-Sometimes specific, sometimes general
+	-A key or variable name that can later be used
+	
+-Verb Phrase - an action on a noun phrase
+	-Can establish properties or attributes about the entity
+		-Size, position, alive
+	-Can describe one noun phrase's relationship to another noun phrase
+		-One contains the other, one is a child of the other, one has killed the other
+	-Can apply adverb and adjective modifiers that further describe the property or relationship
+		-Happened last week, only at night, uncertainty
+
+-Axiom - A noun phrase, verb phrase pair
+	-Can be a statement of fact
+	-Can be a question that results in yes or no
+	
