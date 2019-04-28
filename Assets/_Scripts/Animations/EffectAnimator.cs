@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnitAnimation;
 using UnityEngine;
 
 public class EffectAnimator : AnimationHandler {
@@ -16,23 +17,23 @@ public class EffectAnimator : AnimationHandler {
 		
 	}
 
-	override public void Play(AnimationKeys.Key key, float playLength, params AnimationKeys.Mod[] mods) {
+	override public void Play(AnimationKey key, AnimationData data) {
 		switch (key) {
-			case AnimationKeys.Key.Attack:
+			case AnimationKey.Attack:
 				break;
-			case AnimationKeys.Key.Staggered:
+			case AnimationKey.Staggered:
 				break;
-			case AnimationKeys.Key.StaggeredEnd:
+			case AnimationKey.StaggeredEnd:
 				break;
-			case AnimationKeys.Key.Lifted:
+			case AnimationKey.Lifted:
 				break;
-			case AnimationKeys.Key.LiftedEnd:
+			case AnimationKey.LiftedEnd:
 				break;
-			case AnimationKeys.Key.Death:
+			case AnimationKey.Death:
 				break;
-			case AnimationKeys.Key.DeathEnd:
+			case AnimationKey.DeathEnd:
 				break;
-			case AnimationKeys.Key.Damaged:
+			case AnimationKey.Damaged:
 				damageSpray.SetActive(true);
 				damageSpray.GetComponent<ParticleSystem>().Play();
 				break;

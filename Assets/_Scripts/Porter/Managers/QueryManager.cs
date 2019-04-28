@@ -34,13 +34,18 @@ public class QueryManager : Singleton<QueryManager> {
 		return results[0];
 	}
 
-	public static bool GetPlayer( out GameObject player ) {
+	public static bool GetPlayer( out GameObject player, bool failOnMoreThanOne = false ) {
 		List<GameObject> results = (
 			from obj in Instance.objects
-			where obj.gameObject.CompareTag("Player")
+			where obj.isPlayer
 			select obj.gameObject
 			   ).ToList<GameObject>();
-		if (results.Count != 1) {
+		if (failOnMoreThanOne && results.Count > 1) {
+			//Debug.Log("Query Player had " + results.Count + " results");
+			player = null;
+			return false;
+		}
+		if ( results.Count == 0) {
 			//Debug.Log("Query Player had " + results.Count + " results");
 			player = null;
 			return false;
@@ -52,9 +57,97 @@ public class QueryManager : Singleton<QueryManager> {
 	public static GameObject[] GetNearbyUnits( Vector3 position, float range ) {
 		List<GameObject> results = (
 			from obj in Instance.objects
-			where obj.gameObject.CompareTag("Player")
+			where obj.isUnit
+				&& CommonUtils.DistanceSquared(position, obj.gameObject.transform.position) <= range * range
 			select obj.gameObject
 			   ).ToList<GameObject>();
+
+		return results.ToArray();
+	}
+
+	public static GameObject[] GetNearbyUnitsInFaction(Vector3 position, float range, Faction faction) {
+		List<GameObject> results = (
+			from obj in Instance.objects
+			where obj.isUnit
+				&& FactionUtils.IsA(obj.faction, faction)
+				&& CommonUtils.DistanceSquared(position, obj.gameObject.transform.position) <= range * range
+			select obj.gameObject
+			   ).ToList<GameObject>();
+
+		return results.ToArray();
+	}
+
+
+	public static GameObject[] GetNearbyUnitsNotInFaction(Vector3 position, float range, Faction faction) {
+		List<GameObject> results = (
+			from obj in Instance.objects
+			where obj.isUnit
+				&& FactionUtils.IsNotA( obj.faction, faction )
+				&& CommonUtils.DistanceSquared(position, obj.gameObject.transform.position) <= range * range
+			select obj.gameObject
+			   ).ToList<GameObject>();
+
+		return results.ToArray();
+	}
+
+	public static GameObject[] GetNearbyPickups(Vector3 position, float range) {
+		List<GameObject> results = (
+			from obj in Instance.objects
+			where obj.isPickup
+			orderby (obj.gameObject.transform.position - position ).sqrMagnitude ascending
+			select obj.gameObject
+			   ).ToList<GameObject>();
+
+		return results.ToArray();
+	}
+
+	public static GameObject[] GetNearbyHarvestables(Vector3 position, float range) {
+		List<GameObject> results = (
+			from obj in Instance.objects
+			where obj.isHarvestable
+			orderby (obj.gameObject.transform.position - position).sqrMagnitude ascending
+			select obj.gameObject
+			   ).ToList<GameObject>();
+
+		return results.ToArray();
+	}
+
+	public static GameObject[] GetNearbyResourceables(Vector3 position, float range) {
+		float rangedSquared = range * range;
+		List<GameObject> results = (
+			from obj in Instance.objects
+			where obj.isResourceable 
+			&& (obj.gameObject.transform.position - position).sqrMagnitude <= rangedSquared
+			orderby (obj.gameObject.transform.position - position).sqrMagnitude ascending
+			select obj.gameObject
+			   ).ToList<GameObject>();
+
+		return results.ToArray();
+	}
+
+	public static GameObject[] GetNearbyResourceRecepticals(Vector3 position, float range) {
+		float rangedSquared = range * range;
+		List<GameObject> results = (
+			from obj in Instance.objects
+			where obj.isResourceReceptical
+			&& (obj.gameObject.transform.position - position).sqrMagnitude <= rangedSquared
+			orderby (obj.gameObject.transform.position - position).sqrMagnitude ascending
+			select obj.gameObject
+			   ).ToList<GameObject>();
+
+		return results.ToArray();
+	}
+
+	public static GameObject[] GetNearbyFriendlyProcessingPoint
+			(Vector3 position, Faction faction) {
+		var results = (
+		from obj in Instance.objects
+			where obj.gameObject.CompareTag("Material Processing Point")
+				&& FactionUtils.IsA(obj.faction, faction)
+
+			orderby (obj.gameObject.transform.position - position).sqrMagnitude ascending
+
+			select obj.gameObject);
 
 		return results.ToArray();
 	}
@@ -69,11 +162,11 @@ public class QueryManager : Singleton<QueryManager> {
 		return results.ToArray();
 	}
 
-	public static bool GetClosestUnit(Vector3 position, float range, int team, out GameObject result) {
+	public static bool GetClosestUnit(Vector3 position, float range, out GameObject result) {
 		List<GameObject> results = (
 			from obj in Instance.objects
 			where CommonUtils.Distance(position, obj.gameObject.transform.position) < range
-			&& obj.team == team
+			//&& obj.team == team
 			orderby CommonUtils.Distance(position, obj.gameObject.transform.position) ascending
 			select obj.gameObject
 			   ).ToList<GameObject>();

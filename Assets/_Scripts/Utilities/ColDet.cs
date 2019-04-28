@@ -1,5 +1,7 @@
 ﻿
+using HexMap;
 using Poly2Tri;
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class ColDet {
@@ -32,6 +34,10 @@ public static class ColDet {
 
 	public static Vector2 JustXZ( this Vector3 point ) {
 		return new Vector2(point.x, point.z);
+	}
+
+	public static Vector3 JustY(this Vector3 point) {
+		return new Vector3(0,point.y,0);
 	}
 
 	public static Vector3 DropY( this Vector3 point ) {
@@ -102,10 +108,6 @@ public static class ColDet {
 	/// 2D. if the actual contact point is not needed, use the method that does not take an out result,
 	/// it is more efficient.
 	/// </summary>
-	/// <param name="triangle"></param>
-	/// <param name="point"></param>
-	/// <param name="result"></param>
-	/// <returns></returns>
 	public static float DistanceToClosestPointOnTriangle(DelaunayTriangle triangle, Vector2 point, out Vector2 result) {
 		Vector2 A = triangle.Points[0].AsVector2();
 		Vector2 B = triangle.Points[1].AsVector2();
@@ -166,17 +168,25 @@ public static class ColDet {
 
 		return false;
 	}
+	
+	public static bool SegmentAndTriangle(DelaunayTriangle triangle, Vector2 P, Vector2 Q) {
+		Vector2 A = triangle.Points[0].AsVector2();
+		Vector2 B = triangle.Points[1].AsVector2();
+		Vector2 C = triangle.Points[2].AsVector2();
+
+		return SegmentAndTriangle(A, B, C, P, Q);
+	}
 
 	/// <summary>
 	/// Returns true if the 2d line segment P to Q intersects with the triangle ABC
 	/// </summary>
 	public static bool SegmentAndTriangle( Vector2 A, Vector2 B, Vector2 C, Vector2 P, Vector2 Q ) {
 		// We can simple check if either end point is inside the triangle
-		// but this doesn't accound for if the segment starts and ends outside the triangle
+		// but this doesn't account for if the segment starts and ends outside the triangle
 		// but lays across it
-		//if ( PointInTriangle(A,B,C,P) || PointInTriangle(A,B,C,Q)) {
-		//	return true;
-		//}
+		if (PointInTriangle(A, B, C, P) || PointInTriangle(A, B, C, Q)) {
+			return true;
+		}
 
 		// if any of the edges of the triangle intersect with line segment
 		if (SegmentAndSegment(A, B, P, Q))
@@ -184,6 +194,38 @@ public static class ColDet {
 		if (SegmentAndSegment(B, C, P, Q))
 			return true;
 		if (SegmentAndSegment(C, A, P, Q))
+			return true;
+
+		return false;
+	}
+
+	public static bool TriangleAndTriangle(DelaunayTriangle triangle, Vector2 U, Vector2 V, Vector2 W) {
+		Vector2 A = triangle.Points[0].AsVector2();
+		Vector2 B = triangle.Points[1].AsVector2();
+		Vector2 C = triangle.Points[2].AsVector2();
+
+		return TriangleAndTriangle(A, B, C, U, V, W);
+	}
+
+	/// <summary>
+	/// Returns true if the triangle ABC intersects with the triangle UVW
+	/// </summary>
+	public static bool TriangleAndTriangle(Vector2 A, Vector2 B, Vector2 C, Vector2 U, Vector2 V, Vector2 W) {
+		// For one triangle to intersect with another, one or more sides on the first triangle must intersect with 
+		// one or more sides of the second triangle OR one of the triangles is completely contained within the other
+		
+		// Check each side of triangle ABC with UV, VW, UW
+		// this will also catch if UVW is completely contained within ABC
+		if ( SegmentAndTriangle(A,B,C, U, V ) )
+			return true;
+		if (SegmentAndTriangle(A, B, C, V, W))
+			return true;
+		if (SegmentAndTriangle(A, B, C, U, W))
+			return true;
+
+		// still could be that ABC is completely contained with UVW
+		// we can simply check a single point
+		if ( PointInTriangle(U,V,W, A) )
 			return true;
 
 		return false;
@@ -201,10 +243,6 @@ public static class ColDet {
 	/// Returns 4 points that make up a quadrilateral with one edge centered at A and has the given width,
 	/// and an opposite, parrellel, and similiar edge centered at B.
 	/// </summary>
-	/// <param name="A"></param>
-	/// <param name="B"></param>
-	/// <param name="width"></param>
-	/// <returns></returns>
 	public static Vector2[] CreateQuad( Vector2 A, Vector2 B, float width ) {
 		// the normalized slope from A to B, which ends up being the slope of the other two edges
 		Vector2 perpSlope = (B - A).normalized;
@@ -221,5 +259,183 @@ public static class ColDet {
 			B - slope * halfWidth,
 			A - slope * halfWidth,
 		};
+	}
+
+	public static float DistanceFromPointToCircle( Vector2 P, Vector2 center, float radius ) {
+		// returns 0 if the point is within the circle
+		float distance = (P - center).magnitude;
+		if ( distance < radius ) {
+			return 0;
+		}
+
+		// otherwise, the closest point on the circle to the point is the center + radius towards the point
+		// so the distance from the point to the circle is distance - radius
+		return distance - radius;
+	}
+
+	public static bool CircleAndCircle( Vector2 centerA, float radiusA, Vector2 centerB, float radiusB ) {
+		float distance = (centerB - centerA).sqrMagnitude;
+		// try to avoid doing sqr roots
+		float radii = (radiusA + radiusB) * (radiusA + radiusB);
+		return distance < radii;
+	}
+
+	/// <summary>
+	/// Ignores the y axis; treats all points as if they only exist on the x-z plane.
+	/// </summary>
+	public static bool PolyShapeAndPoint(PolyShape shape, Vector2 point) {
+		// depending on how many points the polyshape has, we can be more efficient
+		switch (shape.PointCount) {
+			case 1:
+				// both shapes are only single points:
+				return point == shape.PointXZ(0);
+			case 2:
+				// is a line segment:
+				return PointLineDistance(
+					shape.PointXZ(0),
+					shape.PointXZ(1),
+					point) == 0f;
+			case 3:
+				// is a triangle
+				return PointInTriangle(
+					shape.PointXZ(0),
+					shape.PointXZ(1),
+					shape.PointXZ(2),
+					point);
+			default:
+				// is a quad or more complex, we basically have to triangulate the shape and
+				// check the point against any of the triangles
+				var triangles = shape.GetTriangles();
+				foreach( var triangle in triangles ) {
+					if ( PointInTriangle(triangle, point ) ) {
+						return true;
+					}
+				}
+				break;
+		}
+
+		return false;
+	}
+
+	public static bool PolyShapeAndSegment(PolyShape shape, Vector2 P, Vector2 Q ) {
+		// depending on how many points the polyshape has, we can be more efficient
+		switch (shape.PointCount) {
+			case 1:
+				// one shape is a point, the other is a line segment:
+				return PointLineDistance(
+					P,
+					Q,
+					shape.PointXZ(0)) == 0f;
+			case 2:
+				// both shapes are line segments
+				return SegmentAndSegment(
+					P,
+					Q,
+					shape.PointXZ(0),
+					shape.PointXZ(1));
+			case 3:
+				// one shape is a line segment, the other is a triangle
+				return SegmentAndTriangle(
+					shape.PointXZ(0),
+					shape.PointXZ(1),
+					shape.PointXZ(2),
+					P,
+					Q);
+			default:
+				// is a quad or more complex, we basically have to triangulate the shape and
+				// check the segment against any of the triangles
+				var triangles = shape.GetTriangles();
+				foreach (var triangle in triangles) {
+					if (SegmentAndTriangle(triangle, P, Q )) {
+						return true;
+					}
+				}
+				break;
+
+		}
+
+		return false;
+	}
+
+	public static bool PolyShapeAndTriangle(PolyShape shape, DelaunayTriangle triangle) {
+		Vector2 A = triangle.Points[0].AsVector2();
+		Vector2 B = triangle.Points[1].AsVector2();
+		Vector2 C = triangle.Points[2].AsVector2();
+
+		return PolyShapeAndTriangle(shape, A, B, C );
+	}
+	
+	public static bool PolyShapeAndTriangle(PolyShape shape, Vector2 A, Vector2 B, Vector2 C) {
+		// depending on how many points the polyshape has, we can be more efficient
+		switch (shape.PointCount) {
+			case 1:
+				// one shape is a triangle, the other is a single point
+				return PointInTriangle(
+					A,
+					B,
+					C,
+					shape.PointXZ(0));
+			case 2:
+				// one shape is a triangle, the other is a line segment
+				return SegmentAndTriangle(
+					A,
+					B,
+					C,
+					shape.PointXZ(0),
+					shape.PointXZ(1));
+			case 3:
+				// both shapes are triangles
+				return ColDet.TriangleAndTriangle(
+					A,
+					B,
+					C,
+					shape.PointXZ(0),
+					shape.PointXZ(1),
+					shape.PointXZ(2));
+			default:
+				// is a quad or more complex, we basically have to triangulate the shape and
+				// check the ABC triangle against any of the triangles
+				var triangles = shape.GetTriangles();
+				foreach (var triangle in triangles) {
+					if (TriangleAndTriangle(triangle, A, B, C)) {
+						return true;
+					}
+				}
+				break;
+
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Ignores the y axis; treats all points as if they only exist on the x-z plane.
+	/// </summary>
+	public static bool PolyShapeAndPolyShape(PolyShape shapeA, PolyShape shapeB) {
+		// if either of the shapes is two points or less we can handle those scenarios differently
+		if (shapeA.PointCount == 0 || shapeB.PointCount == 0) {
+			return false; // idk
+		}
+
+		switch (shapeA.PointCount) {
+			case 1:
+				return PolyShapeAndPoint(shapeB, shapeA.PointXZ(0));
+			case 2:
+				return PolyShapeAndSegment(shapeB, shapeA.PointXZ(0), shapeA.PointXZ(1));
+			case 3:
+				return PolyShapeAndTriangle(shapeB, shapeA.PointXZ(0), shapeA.PointXZ(1), shapeA.PointXZ(2));
+			default:
+				// both are a quad or more complex, we have to triangulate one of the shapes and
+				// check each one against the shape of the othe other
+				var triangles = shapeA.GetTriangles();
+				foreach (var triangle in triangles) {
+					if (PolyShapeAndTriangle(shapeB, triangle)) {
+						return true;
+					}
+				}
+				break;
+		}
+
+		return false;
 	}
 }

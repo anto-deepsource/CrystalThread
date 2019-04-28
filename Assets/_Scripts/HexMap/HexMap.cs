@@ -13,21 +13,38 @@ namespace HexMap {
 	[RequireComponent(typeof(HexagonMaker))]
 	public class HexMap : MonoBehaviour {
 
+		public HexTileset tileset;
+
 		public int generateDistance = 15;
 		public int destroyDistance = 8;
 
-		public bool keepPlayerAbove = true;
+		//public bool keepPlayerAbove = true;
+
+		//public int spawnWallSteps = 8;
+
+		public GameObject targetObject;
+
+		public GameObject TargetObject { get { return targetObject;  } }
+
+		//public HexTable<TileStatus> tileStatuses = new HexTable<TileStatus>();
+
+		/// <summary>
+		/// A volatile list of tile coords that are either waiting to be created or waiting to be destroyed.
+		/// When the coord is popped, the actual operation to do is found within the tileStatuses.
+		/// </summary>
+		public List<Vector2Int> pendingTileModifications = new List<Vector2Int>();
 
 		private HexTable<HexTile> tileTable = new HexTable<HexTile>();
 
 		private HexagonMaker maker;
 
 		private HexMaze hexMaze;
-
 		
-
 		[SerializeField]
 		private HexWallTableBool isWallTable = new HexWallTableBool();
+
+		[SerializeField]
+		private HexTable<int> elevationTable = new HexTable<int>();
 
 		private HexTable<GlobalNode> globalNodeTable = new HexTable<GlobalNode>();
 
@@ -43,12 +60,24 @@ namespace HexMap {
 		private int minZ = 0;
 		private int maxZ = 0;
 
+		//private int steps = 0;
+
+		//private bool isBeingDestroyed = false;
+
 		public HexMetrics Metrics {
-			get { return maker.metrics;  }
+			get {
+				maker = GetComponent<HexagonMaker>();
+				return maker.metrics;
+			}
 		}
+
+		
+		public QuickEvent Events { get { return _events; } }
+		private QuickEvent _events = new QuickEvent();
 
 		// Use this for initialization
 		void Start() {
+			hexMaze = GetComponent<HexMaze>();
 			maker = GetComponent<HexagonMaker>();
 			GameObject player;
 			if (QueryManager.GetPlayer(out player)) {
@@ -84,104 +113,154 @@ namespace HexMap {
 			foreach (var obstacle in obstacles) {
 				PolyShape shape = obstacle.GetComponentInChildren<PolyShape>();
 
-				Vector2Int coords = WorldPositionToAxialCoords(obstacle.transform.position);
+				foreach( var point in shape.GetWorldPoints()) {
+					Vector2Int coords = WorldPositionToAxialCoords(point);
 
-				HexTile tile = tileTable.Get(coords);
-				tile?.AddStaticObstacle(shape);
+					HexTile tile = tileTable.Get(coords);
+					tile?.AddStaticObstacle(shape);
+				}
+
+				
 			}
 		}
 
-		public void MakeMaze() {
+		public void GenerateStartArea() {
 			hexMaze = GetComponent<HexMaze>();
 			maker = GetComponent<HexagonMaker>();
-			maker.Clear();
+			maker.ClearAllTiles();
 
 			isWallTable = hexMaze.GetWallTable();
 
+			maker.GenerateTilesAt(0,0,Metrics.radius);
+		}
+
+		public void RemakeTiles() {
+			hexMaze = GetComponent<HexMaze>();
+			maker = GetComponent<HexagonMaker>();
+			maker.ClearAllTiles();
+
+			elevationTable.Clear();
+
+			maker.GenerateTilesAt(0, 0, Metrics.radius);
+		}
+
+		public void GenerateMaze(int column, int row, int radius) {
+
+			isWallTable.BeginChangeCheck();
+			hexMaze.GenerateMaze(isWallTable, column, row, radius);
+			Events.Fire(MapEvent.WallTableChanged, null);
+
+			foreach( var pos in isWallTable.EndChangeCheck() ) {
+				
+				HexTile currentTile;
+				if ( tileTable.TryGet(pos, out currentTile ) ) {
+					Destroy(currentTile.gameObject);
+
+					HexTile hexTile = maker.GenerateTile(pos.x, pos.y);
+					hexTile.staticObstacles = currentTile.staticObstacles;
+
+					tileTable.Set(pos, hexTile);
+				}
+				
+				globalNodeTable.Remove(pos);
+			}
 			
-			//maker.SetMapTable(isWallTable);
-			maker.Setup();
 		}
 
 		// Update is called once per frame
 		void Update() {
-			GameObject player;
-			if ( !QueryManager.GetPlayer( out player ) ) {
-				return;
-			}
 
-			if (keepPlayerAbove ) {
-				float leastY = maker.metrics.XZPositionToHeight(player.transform.position) * maker.metrics.mapHeight;
-				if ( player.transform.position.y < leastY - 10f ) {
-					player.transform.position = new Vector3(player.transform.position.x, leastY + 2, player.transform.position.z);
-					Rigidbody myBody = player.GetComponent<Rigidbody>();
-					myBody.velocity = new Vector3(myBody.velocity.x, 0, myBody.velocity.z);
+			if (targetObject == null) {
+				GameObject player;
+				if (!QueryManager.GetPlayer(out player)) {
+					return;
 				}
+				targetObject = player;
 			}
 
-			playerCoords = maker.WorldPositionToAxialCoords(player.transform.position);
+			//if (keepPlayerAbove ) {
+			//	HexNavMeshManager.EnsureAboveMap(targetObject.transform);
+			//}
+
+			playerCoords = maker.WorldPositionToAxialCoords(targetObject.transform.position);
 
 			//Debug.Log(playerCoords);
-
 			
-
 			if (HexUtils.Distance(lastPlayerCoords, playerCoords) > 0) {
-				int x = playerCoords.x - lastPlayerCoords.x;
-				int y = playerCoords.y - lastPlayerCoords.y;
-				// TODO: if the player teleports this function doesn't know what to do
-				HexDirection direction = HexUtils.VectorToDirection(x, y);
+				//int x = playerCoords.x - lastPlayerCoords.x;
+				//int y = playerCoords.y - lastPlayerCoords.y;
+				//// TODO: if the player teleports this function doesn't know what to do
+				//HexDirection direction = HexUtils.VectorToDirection(x, y);
 
 				int z = HexUtils.Z(playerCoords.x, playerCoords.y);
-				switch (direction) {
-					case HexDirection.E:
-						RemoveMinColumns();
-						AddMaxColumns();
+				//switch (direction) {
+				//	case HexDirection.E:
+				RemoveMinColumns();
+				AddMaxColumns();
 
-						RemoveMaxZs(z);
-						AddMinZs(z);
+				RemoveMaxZs(z);
+				AddMinZs(z);
 
-						break;
-					case HexDirection.NE:
-						RemoveMinRows();
-						AddMaxRows();
+				//		break;
+				//	case HexDirection.NE:
+				RemoveMinRows();
+				AddMaxRows();
 
-						RemoveMaxZs(z);
-						AddMinZs(z);
-						break;
-					case HexDirection.NW:
-						RemoveMinRows();
-						AddMaxRows();
+				//		RemoveMaxZs(z);
+				//		AddMinZs(z);
+				//		break;
+				//	case HexDirection.NW:
+				//		RemoveMinRows();
+				//		AddMaxRows();
 
-						RemoveMaxColumns();
-						AddMinColumns();
+				RemoveMaxColumns();
+				AddMinColumns();
 
-						break;
-					case HexDirection.W:
-						RemoveMaxColumns();
-						AddMinColumns();
+				//		break;
+				//	case HexDirection.W:
+				//		RemoveMaxColumns();
+				//		AddMinColumns();
 
-						RemoveMinZs(z);
-						AddMaxZs(z);
+				RemoveMinZs(z);
+				AddMaxZs(z);
 
-						break;
-					case HexDirection.SW:
-						RemoveMaxRows();
-						AddMinRows();
+				//		break;
+				//	case HexDirection.SW:
+				RemoveMaxRows();
+				AddMinRows();
 
-						RemoveMinZs(z);
-						AddMaxZs(z);
-						break;
-					case HexDirection.SE:
-						RemoveMinColumns();
-						AddMaxColumns();
-						RemoveMaxRows();
-						AddMinRows();
-						break;
-				}
+				//		RemoveMinZs(z);
+				//		AddMaxZs(z);
+				//		break;
+				//	case HexDirection.SE:
+				//		RemoveMinColumns();
+				//		AddMaxColumns();
+				//		RemoveMaxRows();
+				//		AddMinRows();
+				//		break;
+				//}
+
+
 
 
 
 			}
+
+			//if (pendingTileModifications.Count > 0) {
+			//	Vector2Int coords = pendingTileModifications[0];
+			//	pendingTileModifications.RemoveAt(0);
+			//	NewTileMaybe(coords.x, coords.y);
+			//}
+
+			//// spawn maze
+			//steps++;
+			//if (steps >= 200) {
+			//	steps = 0;
+			//	hexMaze.GenerateMaze(isWallTable, 0, 0, 3);
+			//	Events.Fire(MapEvent.WallTableChanged, null);
+
+			//	maker.Setup();
+			//}
 
 			lastPlayerCoords = playerCoords;
 		}
@@ -189,32 +268,36 @@ namespace HexMap {
 		private void AddRow(int row ) {
 			for( int c = minColumn - 1; c <= maxColumn+1; c ++ ) {
 				NewTileMaybe(c, row);
+				//pendingTileModifications.Add(new Vector2Int(c, row));
 			}
 		}
 
 		private void AddColumn(int column) {
 			for (int r = bottomRow-1; r <= topRow + 1; r++) {
-				NewTileMaybe( column, r);
+				NewTileMaybe(column, r);
+				//pendingTileModifications.Add(new Vector2Int(column, r));
 			}
 		}
 
 		private void AddZ(int z) {
 			for (int r = bottomRow - 1; r <= topRow + 1; r++) {
-				NewTileMaybe(-r-z, r);
+				NewTileMaybe(-r - z, r);
+				//pendingTileModifications.Add(new Vector2Int(-r - z, r));
 			}
 		}
 
 		private void NewTileMaybe(int column, int row) {
 			if ( !tileTable.Contains(column, row) && HexUtils.Distance(column, row, playerCoords.x, playerCoords.y) <= generateDistance + 1) {
-				HexTile hexTile = maker.NewHexTile(column, row, tileTable);
-				
+				HexTile hexTile = maker.GenerateTile( column, row );
+				tileTable.Set(column, row, hexTile);
 			}
 		}
 
 		private void RemoveMinColumns() {
 			while (playerCoords.x - minColumn > destroyDistance) {
 				foreach( var tile in tileTable.RemoveColumn(minColumn) ) {
-					Destroy(tile.gameObject);
+					maker.ReturnTileToPool(tile);
+					//Destroy(tile.gameObject);
 				}
 				minColumn++;
 			}
@@ -223,7 +306,8 @@ namespace HexMap {
 		private void RemoveMaxColumns() {
 			while (maxColumn - playerCoords.x > destroyDistance) {
 				foreach (var tile in tileTable.RemoveColumn(maxColumn)) {
-					Destroy(tile.gameObject);
+					maker.ReturnTileToPool(tile);
+					//Destroy(tile.gameObject);
 				}
 				maxColumn--;
 			}
@@ -232,7 +316,8 @@ namespace HexMap {
 		private void RemoveMinRows() {
 			while (playerCoords.y - bottomRow > destroyDistance) {
 				foreach (var tile in tileTable.RemoveRow(bottomRow)) {
-					Destroy(tile.gameObject);
+					maker.ReturnTileToPool(tile);
+					//Destroy(tile.gameObject);
 				}
 				bottomRow++;
 			}
@@ -241,7 +326,8 @@ namespace HexMap {
 		private void RemoveMaxRows() {
 			while (topRow - playerCoords.y > destroyDistance) {
 				foreach (var tile in tileTable.RemoveRow(topRow)) {
-					Destroy(tile.gameObject);
+					maker.ReturnTileToPool(tile);
+					//Destroy(tile.gameObject);
 				}
 				topRow--;
 			}
@@ -250,7 +336,8 @@ namespace HexMap {
 		private void RemoveMinZs(int z) {
 			while (z - minZ > destroyDistance) {
 				foreach (var tile in tileTable.RemoveZ(minZ)) {
-					Destroy(tile.gameObject);
+					maker.ReturnTileToPool(tile);
+					//Destroy(tile.gameObject);
 				}
 				minZ++;
 			}
@@ -259,7 +346,8 @@ namespace HexMap {
 		private void RemoveMaxZs(int z) {
 			while (maxZ - z > destroyDistance) {
 				foreach (var tile in tileTable.RemoveZ(maxZ)) {
-					Destroy(tile.gameObject);
+					maker.ReturnTileToPool(tile);
+					//Destroy(tile.gameObject);
 				}
 				maxZ--;
 			}
@@ -306,14 +394,40 @@ namespace HexMap {
 		#region Map Properties Methods
 
 		public bool IsWallAt(int column, int row, HexDirection direction) {
-			if (isWallTable == null) {
-				return false;
-			}
-			return isWallTable.Get(column, row, direction);
+			int elevationA = GetElevationAt(column, row);
+
+			int elevationB = GetElevationAt(HexUtils.MoveFrom(column, row, direction));
+
+			int difference = Mathf.Abs(elevationB - elevationA);
+
+			return difference > 2;
+
+			//if (isWallTable == null) {
+			//	return false;
+			//}
+			//return isWallTable.Get(column, row, direction);
 		}
 
 		public bool IsWallAt(Vector2Int pos, HexDirection direction) {
 			return (IsWallAt(pos.x, pos.y, direction));
+		}
+
+		public int GetElevationAt(Vector2Int pos) {
+			return GetElevationAt(pos.x, pos.y);
+		}
+
+		public int GetElevationAt( int column, int row ) {
+			int elevation;
+			if (elevationTable.TryGet(column,row, out elevation ) ) {
+				return elevation;
+			}
+			var point = HexUtils.PositionFromCoordinates(column, row, 1f);
+			float noise = HexUtils.GetHeightOnNoiseMap(Metrics.elevationNoiseMap,
+				point.JustXZ() * Metrics.elevationNoiseMapResolution );
+			elevation = Mathf.FloorToInt( noise * Metrics.maxElevation );
+			//elevation = UnityEngine.Random.Range(0, Metrics.maxElevation );
+			elevationTable.Set(column, row, elevation);
+			return elevation;
 		}
 
 		public Vector3 AxialCoordsToWorldPosition(Vector2Int pos) {
@@ -323,6 +437,10 @@ namespace HexMap {
 		public Vector3 AxialCoordsToWorldPositionWithHeight(Vector2Int pos) {
 			Vector3 result = HexUtils.PositionFromCoordinates(pos.x, pos.y, maker.metrics.tileSize);
 			return result + Vector3.up * maker.metrics.XZPositionToHeight(result,true);
+		}
+
+		public float XZPositionToHeight(Vector3 position, bool scaleByMapHeight = false) {
+			return maker.metrics.XZPositionToHeight(position, scaleByMapHeight);
 		}
 
 		public HexTile GetTile( int column, int row ) {
@@ -341,25 +459,9 @@ namespace HexMap {
 		/// <returns></returns>
 		public Vector2Int WorldPositionToAxialCoords(Vector3 position) {
 			position = transform.InverseTransformPoint(position);
-
-			float q = ((float)Mathf.Sqrt(3) / 3f * position.x - 1f / 3f * position.z) / maker.metrics.tileSize;
-			float r = (2f / 3f * position.z) / maker.metrics.tileSize;
-
-			int rx = Mathf.RoundToInt(q);
-			int ry = Mathf.RoundToInt(r);
-
-			float xDiff = Mathf.Abs(q - rx);
-			float yDiff = Mathf.Abs(r - ry);
-
-			if (xDiff > yDiff) {
-				rx = -ry - Mathf.RoundToInt(-q - r);
-			} else {
-				ry = -rx - Mathf.RoundToInt(-q - r);
-			}
-
-			return new Vector2Int(rx, ry);
+			return HexUtils.WorldPositionToAxialCoords(position, Metrics);
 		}
-
+		
 		#endregion
 
 		#region Global Pathfinding
@@ -372,13 +474,15 @@ namespace HexMap {
 				this.direction = direction;
 			}
 		}
+		
+		public GlobalNode GetGlobalNodeFromWorldPosition(Vector3 pos) {
+			Vector2Int coords = WorldPositionToAxialCoords(pos);
+			return GetGlobalNode(coords);
+		}
 
 		/// <summary>
 		/// Caches and calculates the node information
 		/// </summary>
-		/// <param name="pos"></param>
-		/// <param name="direction"></param>
-		/// <returns></returns>
 		public GlobalNode GetGlobalNode( Vector2Int pos ) {
 			GlobalNode result;
 			if (!globalNodeTable.TryGet(pos, out result)) {
@@ -389,7 +493,7 @@ namespace HexMap {
 		}
 		
 		private GlobalNode CreateNewGlobalNode( Vector2Int pos ) {
-			GlobalNode newNode = new GlobalNode(pos);
+			GlobalNode newNode = new GlobalNode(pos, AxialCoordsToWorldPosition(pos) );
 			// Check each other edge and create unidirectional connections between all applicable
 			foreach ( var dir in HexDirectionUtils.All() ) {
 				// don't connect to any walls
@@ -411,7 +515,8 @@ namespace HexMap {
 			HexTile tile = tileTable.Get(coords);
 			// if the tile is null or not found then there's not much we can do
 			if ( tile == null ) {
-				throw new SystemException("TODO");
+				//throw new SystemException("TODO");
+				return null;
 			}
 			// if this is the first time we've done local pathing on this tile then its
 			// nav mesh hasn't been built yet
@@ -421,7 +526,8 @@ namespace HexMap {
 
 			// if the tile has no triangles then there's not much we can do
 			if ( tile.triangles == null || tile.triangles.Count==0) {
-				throw new SystemException("TODO");
+				//throw new SystemException("TODO");
+				return null;
 			}
 
 			float min = -1;
@@ -442,6 +548,10 @@ namespace HexMap {
 						min = distance;
 					}
 				}
+			}
+
+			if ( closestTriangle==null) {
+				throw new SystemException("Closest Triangle was null");
 			}
 
 			// we didn't outright find a triangle with our point in it but we can return the closest one
@@ -467,5 +577,60 @@ namespace HexMap {
 		}
 
 		#endregion
+
+		public void NotifyOfStaticObstacleAdd(GameObject newObstacle) {
+			//var worldXZPosition = newObstacle.transform.position;
+			//// Get the tile that contains that point
+			//Vector2Int coords = WorldPositionToAxialCoords(worldXZPosition);
+			//HexTile tile = tileTable.Get(coords);
+			//// if the tile is null or not found then there's not much we can do
+			//if (tile == null) {
+			//	//throw new SystemException("TODO");
+			//	return;
+			//}
+			//tile.NavMeshBuilt = false;
+
+			PolyShape shape = newObstacle.GetComponentInChildren<PolyShape>();
+
+			foreach (var point in shape.GetWorldPoints()) {
+				Vector2Int coords = WorldPositionToAxialCoords(point);
+
+				HexTile tile = tileTable.Get(coords);
+				tile?.AddStaticObstacle(shape);
+			}
+		}
+
+		public void NotifyOfStaticObstacleRemove(GameObject newObstacle) {
+			//var worldXZPosition = newObstacle.transform.position;
+			//// Get the tile that contains that point
+			//Vector2Int coords = WorldPositionToAxialCoords(worldXZPosition);
+			//HexTile tile = tileTable.Get(coords);
+			//// if the tile is null or not found then there's not much we can do
+			//if (tile == null) {
+			//	//throw new SystemException("TODO");
+			//	return;
+			//}
+			//tile.NavMeshBuilt = false;
+
+			PolyShape shape = newObstacle.GetComponentInChildren<PolyShape>();
+
+			foreach (var point in shape.GetWorldPoints()) {
+				Vector2Int coords = WorldPositionToAxialCoords(point);
+
+				HexTile tile = tileTable.Get(coords);
+				tile?.RemoveStaticObstacle(shape);
+			}
+		}
+	}
+
+	public enum MapEvent {
+		WallTableChanged = 2,
+	}
+
+	public enum TileStatus {
+		DoesNotExist,
+		Exists,
+		WaitingToBeCreated,
+		WaitingToBeDestroyed
 	}
 }

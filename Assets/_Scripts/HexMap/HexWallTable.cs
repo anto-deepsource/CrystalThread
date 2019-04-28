@@ -30,6 +30,13 @@ namespace HexMap {
 
 		public int Count { get; private set; }
 
+		/// <summary>
+		/// Records the coordinates that have recently had changes.
+		/// Vector3 where the z is the direction and we use that to find the two affected tiles
+		/// HashSet because we don't care about duplicates.
+		/// </summary>
+		private HashSet<Vector3Int> changedCoords = new HashSet<Vector3Int>();
+
 		#region Serialization
 
 		[SerializeField] List<Vector3Int> _Keys;
@@ -87,10 +94,39 @@ namespace HexMap {
 			rowBucket[index.x] = axis2;
 
 			Count++;
+
+			// record that we changed those coordinates
+			changedCoords.Add(index);
 		}
 
 		public void Set( Vector2Int pos, HexDirection direction, T value ) {
 			Set(pos.x, pos.y, direction, value);
+		}
+
+		public void BeginChangeCheck() {
+			changedCoords.Clear();
+		}
+
+		/// <summary>
+		/// Returns the coords for tiles that have been affected by changes.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<Vector2Int> EndChangeCheck() {
+			HashSet<Vector2Int> tileCoords = new HashSet<Vector2Int>();
+			
+			foreach( var coord in changedCoords ) {
+				// take the coord + direction and add both tiles that touch that edge
+				// first one's easy
+				tileCoords.Add(new Vector2Int(coord.x, coord.y));
+				// second one is move 1 tile in the given direction
+				HexDirection direction = (HexDirection)coord.z;
+				Vector2Int move = HexUtils.MoveFrom(coord.x, coord.y, direction);
+				tileCoords.Add(move);
+			}
+
+			foreach (var coord in tileCoords) {
+				yield return coord;
+			}
 		}
 
 		//public void Remove(HexTile tile) {
@@ -131,6 +167,7 @@ namespace HexMap {
 			columnDict.Clear();
 			rowDict.Clear();
 			Count = 0;
+			changedCoords.Clear();
 		}
 
 		public T Get(Vector2Int pos, HexDirection direction) {
@@ -262,7 +299,6 @@ namespace HexMap {
 				return new Vector3Int(column, row, (int)direction);
 			}
 		}
-
 		
 	}
 }

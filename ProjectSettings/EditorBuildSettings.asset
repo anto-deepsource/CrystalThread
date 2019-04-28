@@ -5,6 +5,18 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/_Scenes/HexWallsTest.unity
     guid: a35cc356f6499dd429083492c5254b16
+  - enabled: 0
+    path: Assets/_Scenes/MinionTest.unity
+    guid: 40125843af2e34749a4e947750bea109
+  - enabled: 0
+    path: Assets/_Scenes/HumanColonyTest.unity
+    guid: 8f2f360ed3bddab41bdde7cd0a7da3ad
+  - enabled: 0
+    path: Assets/_Scenes/DialogTest.unity
+    guid: 87fb61cbced830b46bd042884918b862
+  - enabled: 1
+    path: Assets/_Scenes/FloraTest.unity
+    guid: 6253acbbf86d06c4796bae233f57e82a

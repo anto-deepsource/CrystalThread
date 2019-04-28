@@ -1,6 +1,8 @@
 ﻿
+using UnityEngine;
+
 public interface ITask {
 	
-	bool Update(Blackboard blackboard);
+	bool UpdateTask();
 
 }

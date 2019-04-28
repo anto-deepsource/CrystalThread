@@ -461,6 +461,27 @@ namespace HexMap {
 			
 		}
 
+		[Test]
+		public void AngleBetweenVectors1() {
+			float theta = CommonUtils.AngleBetweenVectors(Vector2.right, Vector2.up);
+			Assert.AreEqual(Mathf.PI * 0.5f, theta);
+
+			theta = CommonUtils.AngleBetweenVectors(Vector2.up, Vector2.right);
+			Assert.AreEqual(-Mathf.PI * 0.5f, theta);
+
+			theta = CommonUtils.AngleBetweenVectors(Vector2.left, Vector2.up);
+			Assert.AreEqual(-Mathf.PI * 0.5f, theta);
+
+			theta = CommonUtils.AngleBetweenVectors(Vector2.up, Vector2.left);
+			Assert.AreEqual(Mathf.PI * 0.5f, theta);
+
+			theta = CommonUtils.AngleBetweenVectors(Vector2.left, Vector2.left);
+			Assert.AreEqual(0, theta);
+
+			theta = CommonUtils.AngleBetweenVectors(Vector2.left, Vector2.right);
+			Assert.AreEqual(Mathf.PI, theta);
+		}
+
 		//[Test]
 		//public void WorkSet1() {
 		//	WorkSet set = new WorkSet();
@@ -498,7 +519,7 @@ namespace HexMap {
 		//		costs.Add(lastCost);
 		//		lastCost += (int)(UnityEngine.Random.value * 100f);
 		//	}
-			
+
 		//	foreach( var cost in CommonUtils.Shuffled<int>( costs) ) {
 		//		var node = new NoNode();
 		//		NodeWork work = new NodeWork(node);
@@ -537,7 +558,7 @@ namespace HexMap {
 		//		var node = new NoNode();
 		//		NodeWork work = new NodeWork(node);
 		//		work.Cost = cost;
-				
+
 		//		Assert.IsFalse(set.TryGet(node, out noWork));
 
 		//		set.Add(work);

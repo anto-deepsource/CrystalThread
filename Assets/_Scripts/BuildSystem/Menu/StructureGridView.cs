@@ -8,29 +8,29 @@ public class StructureGridView : ClassicSRIA<CellViewsHolder> {
 
 	public RectTransform itemPrefab;
 
-	public List<StructureData> Data { get; private set; }
+	public List<StructureData> availableStructures;
 
 	protected override void Awake() {
 		base.Awake();
 
-		LoadStructureData();
+		//LoadStructureData();
 		//ResetItems(Data.Count);
 	}
 
-	private void LoadStructureData() {
-		Data = new List<StructureData>();
+	//private void LoadStructureData() {
+	//	availableStructures = new List<StructureData>();
 		
-		Object[] datas = Resources.LoadAll("StructureData");
-		foreach (var data in datas) {
-			StructureData castData = data as StructureData;
-			Data.Add(castData);
-		}
-	}
+	//	Object[] datas = Resources.LoadAll("StructureData");
+	//	foreach (var data in datas) {
+	//		StructureData castData = data as StructureData;
+	//		availableStructures.Add(castData);
+	//	}
+	//}
 
 
 	protected override void Start() {
 		base.Start();
-		ResetItems(Data.Count);
+		ResetItems(availableStructures.Count);
 	}
 
 	protected override CellViewsHolder CreateViewsHolder(int itemIndex) {
@@ -41,7 +41,7 @@ public class StructureGridView : ClassicSRIA<CellViewsHolder> {
 	}
 
 	protected override void UpdateViewsHolder(CellViewsHolder vh) {
-		var model = Data[vh.ItemIndex];
+		var model = availableStructures[vh.ItemIndex];
 		vh.titleText.text = model.title;
 		vh.image.sprite = model.icon;
 		vh.button.onClick.RemoveAllListeners();
@@ -50,8 +50,8 @@ public class StructureGridView : ClassicSRIA<CellViewsHolder> {
 
 	private void OnStructureButtonClicked(int index) {
 		//Debug.Log(index);
-		var model = Data[index];
-		QueryManager.GetPlayer().GetComponent<UnitController>().StartSettingBuilding(model);
+		var model = availableStructures[index];
+		QueryManager.GetPlayer().GetComponent<BuildMenuController>().StartSettingBuilding(model);
 	}
 }
 

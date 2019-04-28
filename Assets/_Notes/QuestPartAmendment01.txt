@@ -1,0 +1,21 @@
+
+Quest Part Changes:
+    -A part's narrative is written stand-alone, and ends after the player's choice plays out a little
+    -After each part the player is returned to they're overall options
+        -Some are always available and the player must use them to rest or change locations
+        -Some are dependent on the location the player currently is in
+        -Some are dependent on what characters are around or available
+        -Each has a 'format'
+    -What used to be 'start format' is now indestinquishable from format
+    -A part is rolled when the player chooses an overall option based on the option's format
+    -Beginning, Middle, and End parts are now chosen based on the player's relationship to the quest-giver, introducing the quest-giver with begining parts, increasing familiraity and conflict in Middle, and resolving the conflict in End parts
+        -Quest arcs now play out concurrently, some playing out each part consecutively, some playing out with severel other arcs in between each part, based simply on the player's format choices, and whether they encounter that character again
+    -Characters have a special relationship to the player that is modified by parts and options; their current spatial relationship to the player
+        -Nearby and following: this character is within eye line/ ear shot of the player and if the player changes rooms or areas this character does the same thing
+            -Used for companions, party members, or any npc that is currently accompanying the player
+        -Nearby, not following: this character is not nearby the player and will remain behind if the player leaves
+        -Not Nearby but in area: this character is not within eye line / ear shot of the player but is still in the same building or medium sized area
+        -Not Nearby, not in area: this character is not nearby or in the same building/area as the player
+            -Usually represents that the player has no idea where this character is and can therefore be where we need them for the next part
+            -Characters usually must go from nearby->not nearby, but in area->Not nearby, not in area, but usually can go straight from not nearby, not in area -> Nearby as they need to be introduced to the story
+    -A part and its options describe an amount of time that passes between when the part/option starts and ends

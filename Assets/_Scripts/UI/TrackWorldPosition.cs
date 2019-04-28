@@ -7,7 +7,8 @@ public class TrackWorldPosition : MonoBehaviour {
 
 	public GameObject target;
 
-	public Vector3 offset = Vector3.zero;
+	public Vector3 worldOffset = Vector3.zero;
+	public Vector2 screenOffset = Vector2.zero;
 	
 	void Update () {
 		if ( target!=null ) {
@@ -17,7 +18,10 @@ public class TrackWorldPosition : MonoBehaviour {
 	}
 
 	public void TrackPosition(GameObject uiObject, GameObject target) {
-		uiObject.transform.position = Camera.main.WorldToScreenPoint(target.transform.position + offset);
+		Vector3 newScreenPoint = Camera.main.WorldToScreenPoint(target.transform.TransformPoint(worldOffset));
+		newScreenPoint.x += screenOffset.x;
+		newScreenPoint.y += screenOffset.y;
+		uiObject.transform.position = newScreenPoint;
 
 		//float left = rect.rect.width * 0.5f + screenBounds;
 		//float right = Screen.width - rect.rect.width * 0.5f - screenBounds;

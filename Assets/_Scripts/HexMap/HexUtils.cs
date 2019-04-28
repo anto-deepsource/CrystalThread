@@ -171,7 +171,7 @@ namespace HexMap {
 
 		public static float GetHeightOnNoiseMap(Texture2D texture, Vector2 uvCoords) {
 			Vector2Int point = UVCoordsToPixelCoords(texture, uvCoords);
-			return texture.GetPixel(point.x, point.y).grayscale;
+			return texture.GetPixel(point.x, point.y).r;
 		}
 
 		/// <summary>
@@ -276,6 +276,37 @@ namespace HexMap {
 		
 		public static int RowFromZ( int column, int z ) {
 			return -column - z;
+		}
+
+		public static Vector2Int WorldPositionToAxialCoords(Vector3 position, HexMetrics metrics ) {
+			//position = transform.InverseTransformPoint(position);
+
+			float q = ((float)Mathf.Sqrt(3) / 3f * position.x - 1f / 3f * position.z) / metrics.tileSize;
+			float r = (2f / 3f * position.z) / metrics.tileSize;
+
+			Vector3 cubeCoords = new Vector3(q, -q-r, r);
+			Vector3Int cubeCoordsRounded = FloatCubeCoordsToIntCubeCoords(cubeCoords);
+			return new Vector2Int(cubeCoordsRounded.x, cubeCoordsRounded.z);
+		}
+		
+		public static Vector3Int FloatCubeCoordsToIntCubeCoords( Vector3 point ) {
+			var rx = Mathf.Round(point.x);
+			var ry = Mathf.Round(point.y);
+			var rz = Mathf.Round(point.z);
+			
+			var x_diff = Mathf.Abs(rx - point.x);
+			var y_diff = Mathf.Abs(ry - point.y);
+			var z_diff = Mathf.Abs(rz - point.z);
+			
+			if (x_diff > y_diff && x_diff > z_diff) {
+				rx = -ry - rz;
+			} else if (y_diff > z_diff) {
+				ry = -rx - rz;
+			} else {
+				rz = -rx - ry;
+			}
+			
+			return new Vector3Int((int)rx, (int)ry, (int)rz);
 		}
 	}
 	

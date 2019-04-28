@@ -16,9 +16,25 @@ namespace HexMap {
 
 			hexMap = (HexMap)target;
 
+			if (GUILayout.Button("Regenerate Tiles")) {
+
+				if (!Application.isPlaying) {
+
+					hexMap.RemakeTiles();
+					UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
+				}
+
+			}
+
 			if (GUILayout.Button("Make Maze")) {
-				hexMap.MakeMaze();
-				UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
+				
+				if ( !Application.isPlaying ) {
+					
+					hexMap.GenerateStartArea();
+					UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
+				} else {
+					hexMap.GenerateMaze(0,0,1);
+				}
 
 			}
 

@@ -6,14 +6,14 @@ using UnityEngine.UI;
 /// <summary>
 /// Container for a particular building/structure that can be built, leaving a new GameObject on the battlefield.
 /// </summary>
-[CreateAssetMenuAttribute(menuName = "Build Menu/Structure Data")]
-public class StructureData : ScriptableObject {
+//[CreateAssetMenuAttribute(menuName = "Build Menu/Structure Data")]
+public class StructureData : MonoBehaviour {
 
 	public string title = "";
 
-	public List<ResourceTypeValuePair> costs = new List<ResourceTypeValuePair>();
+	//public List<ResourceTypeValuePair> costs = new List<ResourceTypeValuePair>();
 
 	public Sprite icon;
 
-	public GameObject objectPrefab;
+	//public GameObject objectPrefab;
 }

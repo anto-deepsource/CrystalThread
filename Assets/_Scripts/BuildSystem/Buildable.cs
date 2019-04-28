@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using HexMap;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -8,6 +9,8 @@ public class Buildable : MonoBehaviour, IPointerClickHandler, IPointerDownHandle
 	private float hideBuildIndicatorsDelay = 0;
 
 	static float BI_HIDE_DELAY = 0.2f;
+
+	public float buildCost = 4;
 
 	public List<ResourceTypeValuePair> costs = new List<ResourceTypeValuePair>();
 
@@ -25,11 +28,14 @@ public class Buildable : MonoBehaviour, IPointerClickHandler, IPointerDownHandle
 
 	private Transform playerCursor;
 
-	private ObjectQuery query;
+	//private ObjectQuery query;
+
+	public bool Built { get { return built; } }
 
 	// Use this for initialization
 	void Awake () {
 		realMesh = transform.Find("RealMesh");
+		built = realMesh.gameObject.activeSelf;
 
 		buildMesh = transform.Find("BuildMesh");
 		Transform bi = buildMesh.Find("buildIndicators");
@@ -44,16 +50,16 @@ public class Buildable : MonoBehaviour, IPointerClickHandler, IPointerDownHandle
 
 		setGoodMesh = transform.Find("SetGoodMesh");
 
-		query = new ObjectQuery() {
-			gameObject = gameObject,
-			isStaticObstacle = true,
-		};
-		QueryManager.RegisterObject(query);
+		//query = new ObjectQuery() {
+		//	gameObject = gameObject,
+		//	isStaticObstacle = built,
+		//};
+		//QueryManager.RegisterObject(query);
 	}
 
-	public void OnDestroy() {
-		QueryManager.UnregisterObject(query);
-	}
+	//public void OnDestroy() {
+	//	QueryManager.UnregisterObject(query);
+	//}
 
 
 	// Update is called once per frame
@@ -115,11 +121,14 @@ public class Buildable : MonoBehaviour, IPointerClickHandler, IPointerDownHandle
 		}
 	}
 
-	private void Build() {
+	public void Build() {
 		buildMesh.gameObject.SetActive(false);
 		HideBuildIndicators();
 		
 		realMesh.gameObject.SetActive(true);
+		built = true;
+		GetComponent<Queryable>().query.isStaticObstacle = built;
+		HexNavMeshManager.GetHexMap().NotifyOfStaticObstacleAdd(gameObject);
 	}
 
 	public void StartSetting( Transform cursor ) {

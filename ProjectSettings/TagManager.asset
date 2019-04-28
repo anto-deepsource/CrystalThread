@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Material Processing Point
   layers:
   - Default
   - TransparentFX
@@ -19,14 +20,14 @@ TagManager:
   - Effects
   - Buildable
   - Pickups
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Rocks
+  - InWorldUI
+  - Trees
+  - Minimap
+  - Bourgeoisie
+  - Throwable
+  - Propaganda
+  - BodyParts
   - 
   - 
   - 

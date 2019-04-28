@@ -12,11 +12,11 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour {
 
 	private static object _lock = new object();
 
-	private static bool _verbose = true;
+	private static bool _verbose = false;
 
 	public static T Instance {
 		get {
-			if (applicationIsQuitting) {
+			if (applicationIsQuitting && _verbose) {
 				Debug.LogWarning("[Singleton] Instance '" + typeof(T) +
 					"' already destroyed on application quit." +
 					" Won't create again - returning null.");

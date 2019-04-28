@@ -7,6 +7,10 @@ namespace HexMap {
 	[RequireComponent(typeof(HexMap))]
 	public class HexMaze : MonoBehaviour {
 
+		public bool generateWorld = false;
+
+		public float newMazeChance = .4f;
+
 		public int column = 0;
 		public int row = 1;
 		public int radius = 3;
@@ -14,16 +18,31 @@ namespace HexMap {
 		public GameObject lightStonePrefab;
 
 		private HexagonMaker hexagonMaker;
+		private HexMap hexMap;
 		private GameObject pickupsFolder;
+
+		private QuickListener listener;
+
+		// Use this for initialization
+		void Start() {
+			listener = new QuickListener(BubbleCallbacks);
+			BubbleManager.Events.Add(listener);
+		}
 
 		public void Awake() {
 			hexagonMaker = GetComponent<HexagonMaker>();
+			hexMap = GetComponent<HexMap>();
+			
 		}
 
 		private void ValidateHexagonMaker() {
 			if (hexagonMaker == null) {
 
 				hexagonMaker = GetComponent<HexagonMaker>();
+			}
+			if (hexMap == null) {
+
+				hexMap = GetComponent<HexMap>();
 			}
 		}
 
@@ -33,15 +52,68 @@ namespace HexMap {
 			pickupsFolder = ObjectFactory.Folder("Picksups", transform);
 
 			HexWallTableBool wallTable = new HexWallTableBool();
-			//MakeRing(wallTable, column, row, radius);
-			WallOffCircle(wallTable, column, row, radius);
-			//Vector2Int pos = HexUtils.RandomPointInArea(column, row, radius);
-			//WallOffTile(wallTable, pos);
-			GrowingTreeMaze(wallTable, column, row, radius);
+			if ( radius > 0 ) {
+				//MakeRing(wallTable, column, row, radius);
+				WallOffCircle(wallTable, column, row, radius);
+				//Vector2Int pos = HexUtils.RandomPointInArea(column, row, radius);
+				//WallOffTile(wallTable, pos);
+				GrowingTreeMaze(wallTable, column, row, radius);
 
-			OpenOneWallOnRing(wallTable, column, row, radius);
+				// open a few entrances/exits
+				for (int i = 0; i < RadiusToExits(radius); i++) {
+					OpenOneWallOnRing(wallTable, column, row, radius);
+				}
+			}
+			
 
 			return wallTable;
+		}
+
+		/// <summary>
+		/// The number of exits depends on the radius and is proportional based on a curve
+		/// that causes the number of exits to increase exponentially as the sides become larger
+		/// </summary>
+		/// <param name="radius"></param>
+		/// <returns></returns>
+		public static int RadiusToExits( int radius ) {
+			return Mathf.RoundToInt((radius * radius) / 10f + radius * (15f/14f) );
+		}
+
+		public void GenerateMaze(HexWallTable<bool> wallTable, Vector2Int pos, int radius) {
+			GenerateMaze(wallTable, pos.x, pos.y, radius);
+		}
+
+		public void GenerateMaze(HexWallTable<bool> wallTable, int column, int row, int radius) {
+			ValidateHexagonMaker();
+
+			pickupsFolder = ObjectFactory.Folder("Picksups", transform);
+			WallOffCircle(wallTable, column, row, radius);
+			GrowingTreeMaze(wallTable, column, row, radius);
+
+			// open a few entrances/exits
+			//for( int i = 0; i < radius; i ++ ) {
+			for (int i = 0; i < RadiusToExits(radius); i++) {
+					OpenOneWallOnRing(wallTable, column, row, radius);
+			}
+
+		
+		}
+
+		private void BubbleCallbacks( int eventCode, object data ) {
+			if ( !generateWorld ) {
+				return;
+			}
+			switch ((BubbleEvent)eventCode) {
+				case BubbleEvent.NewBubble:
+					if (UnityEngine.Random.value < newMazeChance) {
+						Bubble newBubble = data as Bubble;
+						Vector2Int pos = hexMap.WorldPositionToAxialCoords(newBubble.center.FromXZ());
+						int radius = Mathf.FloorToInt(newBubble.radius / (hexMap.Metrics.tileSize * 3f));
+						hexMap.GenerateMaze(pos.x, pos.y, radius);
+					}
+					
+					break;
+			}
 		}
 
 		private void MakeRing(HexWallTable<bool> wallTable, int column, int row, int radius) {
@@ -112,27 +184,66 @@ namespace HexMap {
 			// Turn and move perpendicular to the ring
 			HexDirection moveDir = startDir.Next2();
 
+			// there's X possible tiles where X is radius * 6
+			// 6 corner tiles, radius * 6 - 6 edge tiles
+			// the edge tiles each have 2 possible sides to choose from
+			// the corner tiles each have 3
+
+			int edgeTiles = 6 * (radius - 1);//radius * 6 - 6;
+			int possibilities = 6 * 3 + edgeTiles * 2;
+
+			int rValue = Mathf.FloorToInt(possibilities * UnityEngine.Random.value) + 1;
+			int count = 0;
 			for (int i = 0; i < 6; i++) {
+				
+
 				// Move CCW one tile for (radius) tiles, putting two walls
-				for (int t = 0; t < radius - 1; t++) {
+				for (int t = 0; t < radius; t++) {
 					currentPos = HexUtils.MoveFrom(currentPos, moveDir);
-					//wallTable.Set(currentPos, moveDir.Last(), true);
-					//wallTable.Set(currentPos, moveDir.Last2(), true);
+					
+					count++;
+
+					if (count == rValue) {
+						// if this is already an opening, let's just make it wider by going one more wall
+						if ( !wallTable.Get(currentPos, moveDir.Last2())) {
+							rValue++;
+						} else {
+							wallTable.Set(currentPos, moveDir.Last2(), false);
+							break;
+						}
+					}
+
+					count++;
+
+					if (count == rValue) {
+						// if this is already an opening, let's just make it wider by going one more wall
+						if (!wallTable.Get(currentPos, moveDir.Last())) {
+							rValue++;
+						} else {
+							wallTable.Set(currentPos, moveDir.Last(), false);
+							break;
+						}
+					}
 				}
-				// TODO: make this better
-				wallTable.Set(currentPos, moveDir.Last(), false);
-				break;
 
-				// Move into the corner
-				currentPos = HexUtils.MoveFrom(currentPos, moveDir);
-
-				//// Corner hexes will need three walls
-				//wallTable.Set(currentPos, moveDir, true);
-				//wallTable.Set(currentPos, moveDir.Last(), true);
-				//wallTable.Set(currentPos, moveDir.Last2(), true);
+				if (count == rValue) {
+					break;
+				}
 
 				// Turn CCW
 				moveDir = moveDir.Next();
+
+				count++;
+
+				if (count == rValue) {
+					// if this is already an opening, let's just make it wider by going one more wall
+					if (!wallTable.Get(currentPos, moveDir.Last())) {
+						rValue++;
+					} else {
+						wallTable.Set(currentPos, moveDir.Last(), false);
+						break;
+					}
+				}
 			}
 		}
 
@@ -223,8 +334,9 @@ namespace HexMap {
 						//SpawnManager.NewLightStone();
 						Vector3 lightStonePos = hexagonMaker.AxialCoordsToWorldPosition(pos);
 						GameObject newStone = GameObject.Instantiate(lightStonePrefab, pickupsFolder.transform);
-						float y = hexagonMaker.metrics.XZPositionToHeight(lightStonePos.x, lightStonePos.z, true);
-						newStone.transform.position = lightStonePos;
+						float y = hexMap.Metrics.XZPositionToHeight(lightStonePos.x, lightStonePos.z, true);
+
+						newStone.transform.position = lightStonePos + Vector3.up * y ;
 					}
 					
 				}

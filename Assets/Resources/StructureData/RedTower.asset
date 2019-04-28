@@ -14,7 +14,7 @@ MonoBehaviour:
   title: Red Tower
   costs:
   - type: 0
-    value: 1
+    value: 0
   icon: {fileID: 21300000, guid: 279e94494a921ac4bbdfa36625ac0782, type: 3}
   objectPrefab: {fileID: 1287903783576984, guid: 1932116469e71774d8388fdae33a2ce5,
     type: 2}

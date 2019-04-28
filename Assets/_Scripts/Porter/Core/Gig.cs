@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Gig : ITask {
 
-	public delegate bool UpdateDelegate(Blackboard blackboard);
+	public delegate bool UpdateDelegate();
 
 	private UpdateDelegate _update;
 
@@ -12,7 +12,7 @@ public class Gig : ITask {
 		_update = update;
 	}
 
-	public bool Update(Blackboard blackboard) {
-		return _update(blackboard);
+	public bool UpdateTask() {
+		return _update();
 	}
 }

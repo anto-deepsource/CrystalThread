@@ -1,0 +1,17 @@
+
+* The player can move around the crystal thread using the 'galaxy map'
+    -Displays each world as a node with connections between them
+    -The world the player starts in and each world the player visits becomes 'Discovered', at which point its full parameters are rolled and remembered
+    -Undiscovered worlds are generated a certain distance in each direction from the player
+    -Most worlds have a handful of human colonies
+        -Saving the human colonies grants the player a small amount of passive resource income
+        -Further interacting with the colony can improve or hurt the income
+        -While the player is not around the colonies parameters (such as amount of humans, or position of colony) stay stagnant
+
+    -Worlds have a handful of enemy colonies
+        -While the player is around, enemy units are created and perform a specific role for the colony
+        -The colony tries to maintain a certain number of each unit by generating units every so often
+            -If the player is not around, these numbers are kept track of but objects aren't generated
+        -A colony has a center and a radius that define where units are created and generally remain
+        -A colony can move while the player isn't around
+        -If all the members of a colony dies, the colony goes dormant for a length of time and/or until the player goes away, then creates more units

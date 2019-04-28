@@ -1,0 +1,57 @@
+
+
+Buildable Tools and Buildings
+- The player has access to a menu of various things they can build
+- Tools and armor are carriable objects that appear in the player's inventory and can be used and equipped from there
+    -Certain tools and armor can be crafted anywhere, while most require the player to be at a 'workbench'
+    -Most tools and armor have a 3d mesh object that appears in the game world if the player drops that item or before the player has picked it up
+-Structures and buildings are placed in the game world and remain in one place (more or less)
+    -One of the steps when the player is choosing what to build is  where the player wants it built
+    -Once the player confirms a location, a 'blueprint' version of the building is put there and the building remains 'under construction' until each of the required resources have been brought to the building
+    -During and after the resources being gathered, the player must hold and activate the building for a designated amount of time, 'building' it
+        -Finally placing the building there
+        -Builder Bees can do this for the player
+    -Certain buildings can be 'packed' and turn into carriable items that go into the player's inventory
+        -While they are in this state they do not do their operations or abilities
+        -They can then be 'setup' again in a new designated spot
+        -Both of these processes take certain amounts of time
+        -Builder Bees can do both of these in the player's place
+    -
+
+- Each thing costs a certain number of various resources
+- Some of these resources are:
+    -Structure Material
+    -Batteries
+    -Circuitry Material
+    -Cosmic Material
+    -Enchanted Material
+
+-Some of the tools are:
+    -Knife
+    -Machine Gun
+    -Shotgun
+    -Rifle
+    -Melee Weapon
+    -Crystal's Edge / Gravity Whip
+    -Map
+    -Personal Artificially Intelligent Assistant
+
+-Some of the buildings are:
+    -Stun trap
+    -Camp Fire / POS (Portable Oasis System)
+    -Toolbench
+    -Builder Bees
+    -One person hut
+    -Spider Hole
+    -Short Wall
+    -Hydroponic Plant Pot
+
+-Armor
+    -Various armors can be built that:
+        -Block certain types of damage
+        -Increase movement speed
+        -Increase ranged attacks speed / damage
+        -Reflect certain attacks
+        -The player's carrying capacity
+        -The player's strength
+    -Warp Shield

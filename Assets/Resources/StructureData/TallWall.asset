@@ -14,7 +14,7 @@ MonoBehaviour:
   title: Tall Wall
   costs:
   - type: 0
-    value: 1
+    value: 0
   icon: {fileID: 21300000, guid: 4f790efd752149d42b31113a1c7ad163, type: 3}
   objectPrefab: {fileID: 1890001898899074, guid: 9528623f99cb4314295b2f0c780e3dbe,
     type: 2}

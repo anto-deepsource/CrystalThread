@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnitAnimation;
 using UnityEngine;
 
 public static class UnitFacing {
@@ -66,16 +67,15 @@ public class UnitAnimator : AnimationHandler {
 
 	float t;
 	int i = 0;
-
-	// Update is called once per frame
+	
 	void Update () {
 		t += Time.deltaTime;
 
 		Camera mainCamera = Camera.main;
 
 		float theta = CommonUtils.ThetaBetweenD(
-			CommonUtils.HorPosition(transform),
-			CommonUtils.HorPosition(mainCamera.transform));
+			transform.position.JustXZ(),
+			mainCamera.transform.position.JustXZ());
 		float difference = theta + transform.parent.rotation.eulerAngles.y;
 		while (difference > 180)
 			difference -= 360;
@@ -187,33 +187,34 @@ public class UnitAnimator : AnimationHandler {
 		}
 	}
 
-	override public void Play(AnimationKeys.Key key, float playLength, params AnimationKeys.Mod[] mods) {
+	override public void Play(AnimationKey key, AnimationData data) {
 		if (materialPack != null) {
 			switch( key ) {
-				case AnimationKeys.Key.Lifted:
+				case AnimationKey.Lifted:
 					StartCoroutine(ColorAnimation(materialPack.staggeredAnimation));
 					
 					break;
-				case AnimationKeys.Key.LiftedEnd:
+				case AnimationKey.LiftedEnd:
 					StartCoroutine(ColorAnimation(materialPack.resetAnimation));
 
 					break;
-				case AnimationKeys.Key.Damaged:
+				case AnimationKey.Damaged:
 					StartCoroutine(ColorAnimation(materialPack.damagedAnimation));
 
 					break;
-				case AnimationKeys.Key.Staggered:
+				case AnimationKey.Staggered:
 					StartCoroutine(ColorAnimation(materialPack.staggeredAnimation));
 
 					break;
-				case AnimationKeys.Key.StaggeredEnd:
+				case AnimationKey.StaggeredEnd:
 					StartCoroutine(ColorAnimation(materialPack.resetAnimation));
 
 					break;
 
-				case AnimationKeys.Key.Death:
+				case AnimationKey.Death:
 					StartCoroutine(ColorAnimation(materialPack.deathAnimation, AnimationKeys.Event.DeathEnd ));
-
+					IsRunning = false;
+					IsInAir = true;
 					break;
 			}
 			

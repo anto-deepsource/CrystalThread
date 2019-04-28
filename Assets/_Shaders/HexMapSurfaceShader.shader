@@ -60,11 +60,11 @@
 			o.Smoothness = _Glossiness;
 			//o.Alpha = c.a;
 			float camDistance = distance(_WorldSpaceCameraPos,IN.worldPos);
-			if ( camDistance < 10 ) {
+			if ( camDistance < 1 ) {
 				clip(-1);
 				//o.Alpha = 0.2f;
 			} else
-			if ( camDistance > 1500 ) {
+			if ( camDistance > 15000 ) {
 				//o.Alpha = 0.2f;
 				clip(-1);
 			} else {

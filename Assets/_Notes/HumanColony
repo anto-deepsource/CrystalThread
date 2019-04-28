@@ -1,0 +1,42 @@
+
+Human Colonies
+    -Harvests Nearby trees
+    -Collects Boulders
+    -Collects wild food
+    -Hunts nearby creatures
+    -Researches new tools and buildings
+    -Builds a strategic sequence of buildings
+        -Armory
+            -Provides the humans with certain weapons
+        -Food Storage
+            -Provides a place for food to be stored and not deteriorate
+        -Barracks
+            -Provides a place for humans to rest
+        -Library
+            -Provides a place for humans to do research and increase their technology and available tools and buildings
+        -Processing Machine
+            -Provides a drop off point for raw material resources
+
+    -Each human goes through phases of working and rest
+        -During the rest state, a human eats and sleeps and socializes as they need
+        -If a human fully runs out of rest, they fall asleep where ever they are, passing out
+        -If a human gets too hungry they take a speed and effectivness penalty
+
+    -Each human has a random set of stats
+        -Strength
+            -Affects the amount they can carry
+            -Affects the damage they do with melee weapons
+        -Finess (Panache?)
+            -Affects their damage with ranged weapons
+            -Affects how fast they build things
+        -Agility
+            -Affects how fast they move
+        -Endurance (Moxy?)
+            -Affects how much damage they can take
+            -Affects how much rest they need
+
+    -The player can gain control over a colony through various ways, which then:
+        -Gives the player some passive resource income
+        -Allows the player to choose what technology that colony is researching
+        -Allows the player to give or take resources
+        -Allows the player to recruit any of the humans as companions

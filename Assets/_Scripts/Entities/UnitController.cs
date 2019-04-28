@@ -94,6 +94,20 @@ public class UnitController : MonoBehaviour {
 	/// </summary>
 	private ControllerState controllerState = new ControllerState();
 
+	private ObjectQuery query;
+
+	public void Awake() {
+		query = new ObjectQuery() {
+			gameObject = gameObject,
+			hasBlackboard = false,
+			isPlayer = true,
+			isUnit = true,
+			faction = Faction.Player,
+
+		};
+		QueryManager.RegisterObject(query);
+	}
+
 	void Start() {
 		myBody = GetComponent<Rigidbody>();
 		// Grab a handle to the camera
@@ -384,7 +398,7 @@ public class UnitController : MonoBehaviour {
 	}
 
 	public void StartSettingBuilding( StructureData data ) {
-		placingObject = GameObject.Instantiate(data.objectPrefab);
+		placingObject = GameObject.Instantiate(data.gameObject);
 		//placingObject.transform.SetParent(crossHairs.transform);
 		//placingObject.transform.localPosition = Vector3.zero;
 		placingObject.GetComponent<Buildable>().StartSetting(crossHairs.transform);

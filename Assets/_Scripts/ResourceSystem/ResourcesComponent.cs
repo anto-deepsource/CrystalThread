@@ -26,6 +26,14 @@ public class ResourcesComponent : MonoBehaviour {
 
 	#region Arithmetic
 
+	public int GetValueOf(ResourceType type) {
+		int stored;
+		if (quantities.TryGetValue(type, out stored)) {
+			return stored;
+		}
+		return 0;
+	}
+
 	/// <summary>
 	/// Returns true if this unit has, at least, the given value of resource.
 	/// </summary>
@@ -82,10 +90,10 @@ public class ResourcesComponent : MonoBehaviour {
 	public void Subtract(ResourceType type, int value) {
 		int stored;
 		if (quantities.TryGetValue(type, out stored)) {
-			quantities[type] = stored - value;
+			quantities[type] = Mathf.Max(0, stored - value);
 		} else {
 			// TODO: Negative quantities? maybe thrown an error or do something better
-			quantities[type] = -value;
+			quantities[type] = Mathf.Max(0, -value);
 		}
 		events.Fire((int)ResourceEvent.Subtract, type);
 	}
@@ -107,7 +115,8 @@ public class ResourcesComponent : MonoBehaviour {
 public enum ResourceType {
 	Lightstones,
 	Rockpaste,
-
+	BodyParts,
+	StructureMaterial,
 }
 
 public enum ResourceEvent {

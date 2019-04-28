@@ -10,7 +10,13 @@ namespace HexMap.Pathfinding {
 		
 		public T Position { get; set; }
 
+		/// <summary>
+		/// The x-z plane position in the world. Used for cost and heuristics.
+		/// </summary>
+		public Vector2 WorldPos { get; set; }
+
 		public abstract IEnumerable<Edge<T>> Edges();
+		
 	}
 
 	public abstract class Edge<T> {
@@ -23,107 +29,18 @@ namespace HexMap.Pathfinding {
 		}
 
 		public abstract float Cost();
+
+		public float Width { get; set; }
 	}
-
-	public class NodeWork<T> : IComparable<NodeWork<T>> {
-		public AbstractPathNode<T> Node { get; private set; }
-
-		/// <summary>
-		/// Total cost of all the edges taken so.
-		/// </summary>
-		public float Cost { get; set; }
-
-		public float Heuristic { get; set; }
-
-		public float TotalEstimatedCost { get { return Cost + Heuristic; } }
-
-		public int Steps { get; set; }
-
-		public NodeWork<T> Parent { get; private set; }
-
-		public List<NodeWork<T>> Children { get; private set; }
-
-		public NodeWork( AbstractPathNode<T> node, NodeWork<T> cameFrom = null ) {
-			this.Node = node;
-			Parent = cameFrom;
-			Children = new List<NodeWork<T>>();
-			cameFrom?.Children.Add(this);
-
-			Steps = cameFrom != null ? cameFrom.Steps + 1 : 0;
-		}
-		
-		public int CompareTo(NodeWork<T> other) {
-			return Mathf.RoundToInt(TotalEstimatedCost - other.TotalEstimatedCost);
-		}
-
-		/// <summary>
-		/// Removes this work from being a child of its parent
-		/// </summary>
-		public void Emancipate() {
-			Parent = null;
-		}
-
-		public bool Contains( AbstractPathNode<T> node) {
-			if ( Node == node ) {
-				return true;
-			}
-			if ( Parent == null ) {
-				return false;
-			}
-			return Parent.Contains(node);
-		}
-	}
-
+	
 	public enum PathStatus {
 		None = 0,
 		Processing = 2,
 		Failed = 4,
 		Succeeded = 8,
-		Partial = 16,
+		Restarting = 16,
 	}
-
-	/// <summary>
-	/// I needed a data structure that auto sorted new entries based on their estimated cost and also hashed them by the nodes they used.
-	/// There's probably a more efficient way but I did a dual-list setup where a BST has all the elements sorted and a Dictionary
-	/// hashes them by the nodes.
-	/// </summary>
-	public class WorkSet<T> {
-		private BinarySearchTree<NodeWork<T>> sorted = new BinarySearchTree<NodeWork<T>>();
-		private Dictionary<AbstractPathNode<T>, NodeWork<T>> _set = new Dictionary<AbstractPathNode<T>, NodeWork<T>>();
-
-		public int Count { get { return _set.Count;  } }
-
-		public void Add( NodeWork<T> work ) {
-			sorted.Add(work);
-			_set.Add(work.Node, work);
-		}
-
-		public void Remove( NodeWork<T> work ) {
-			sorted.Remove(work);
-			_set.Remove(work.Node);
-		}
-
-		/// <summary>
-		/// Returns the next nodeWork with the LOWEST estimated cost
-		/// </summary>
-		/// <returns></returns>
-		public NodeWork<T> PopBest() {
-			// The 'best' path is the one with the lowest estimated cost
-			NodeWork<T> best = sorted.Min;
-			Remove(best);
-			return best;
-		}
-
-		public bool TryGet( AbstractPathNode<T> node, out NodeWork<T> work ) {
-			return _set.TryGetValue(node, out work);
-		}
-
-		public void Clear() {
-			sorted.Clear();
-			_set.Clear();
-		}
-	}
-
+	
 	/// <summary>
 	/// Used to traverse the HexMap by tiles. Represents one side between two touching tiles that connects to each other side of each tile.
 	/// </summary>
@@ -133,8 +50,9 @@ namespace HexMap.Pathfinding {
 		
 		public List<GlobalEdge> edges = new List<GlobalEdge>();
 
-		public GlobalNode( Vector2Int position ) {
+		public GlobalNode( Vector2Int position, Vector3 worldPosition ) {
 			Position = position;
+			WorldPos = worldPosition.JustXZ();
 		}
 
 		public override IEnumerable<Edge<Vector2Int>> Edges() {
@@ -153,7 +71,9 @@ namespace HexMap.Pathfinding {
 		private bool _costCalculated = false;
 		public float _cost;
 
-		public GlobalEdge(Vector2Int start, Vector2Int end) : base(start, end) { }
+		public GlobalEdge(Vector2Int start, Vector2Int end) : base(start, end) {
+			Width = 1;
+		}
 
 		public override float Cost() {
 			if (!_costCalculated) {
@@ -165,10 +85,12 @@ namespace HexMap.Pathfinding {
 			}
 			return _cost;
 		}
+
+
 	}
 
 	/// <summary>
-	/// Used to traverse the HexMap by tiles. Represents one side between two touching tiles that connects to each other side of each tile.
+	/// Used to traverse the HexMap by triangulated triangles.
 	/// </summary>
 	public class LocalNode : AbstractPathNode<DelaunayTriangle> {
 		
@@ -176,13 +98,7 @@ namespace HexMap.Pathfinding {
 
 		public LocalNode(DelaunayTriangle position) {
 			Position = position;
-		}
-
-		public Vector3 WorldPos {
-			get {
-				var point = Position.Centroid();
-				return new Vector3(point.Xf, 0, point.Yf);
-			}
+			WorldPos = Position.Centroid().AsVector3().JustXZ();
 		}
 
 		public override IEnumerable<Edge<DelaunayTriangle>> Edges() {
@@ -195,11 +111,28 @@ namespace HexMap.Pathfinding {
 			}
 		}
 
+		/// <summary>
+		/// Checks the edges and returns true if the given node is connected to this one.
+		/// </summary>
+		/// <param name="otherNode"></param>
+		/// <returns></returns>
+		public bool IsAdjacentTo( LocalNode otherNode ) {
+			foreach( var edge in Edges() ) {
+				if ( edge.End == otherNode.Position ) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 		private void MakeEdges() {
 			edges = new List<LocalEdge>();
 			for (int i = 0; i < 3; i++) {
 				if (!Position.EdgeIsConstrained[i]) {
-					LocalEdge newEdge = new LocalEdge(Position, Position.Neighbors[i]);
+					var pointA = Position.Points[i].AsVector3();
+					var pointB = Position.Points[(i+1)%3].AsVector3();
+					var width = (pointB - pointA).magnitude;
+					LocalEdge newEdge = new LocalEdge(Position, Position.Neighbors[i], width);
 					edges.Add(newEdge);
 				}
 			}
@@ -212,6 +145,7 @@ namespace HexMap.Pathfinding {
 				
 			//}
 		}
+
 	}
 	
 	/// <summary>
@@ -223,7 +157,10 @@ namespace HexMap.Pathfinding {
 		private bool _costCalculated = false;
 		public float _cost;
 
-		public LocalEdge(DelaunayTriangle start, DelaunayTriangle end) : base(start, end) { }
+		public LocalEdge(DelaunayTriangle start, DelaunayTriangle end, float width)
+				: base(start, end) {
+			Width = width;
+		}
 
 		public override float Cost() {
 			if (!_costCalculated) {
@@ -237,6 +174,8 @@ namespace HexMap.Pathfinding {
 			return _cost;
 		}
 	}
+
+	
 
 	//public struct EdgeCoords {
 	//	public Vector2Int position;
@@ -256,14 +195,5 @@ namespace HexMap.Pathfinding {
 	//		}
 	//	}
 	//}
-
-
-	/// <summary>
-	/// Provides global pathfinding across hex tiles.
-	/// Serves up 'Jobs' that can take a start and end position and asyncroniously return a step-by-step path or a 'No Path'.
-	/// A Job's start and end positions can be altered and updated after beginning and the pathfinding compensates.
-	/// </summary>
-	public class HexStar {
-
-	}
+	
 }

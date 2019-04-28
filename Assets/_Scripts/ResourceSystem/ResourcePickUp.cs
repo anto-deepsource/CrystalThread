@@ -5,6 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class ResourcePickUp : MonoBehaviour {
 
+
+
 	public LayerMask layer;
 
 	public ResourceType type;
@@ -12,15 +14,11 @@ public class ResourcePickUp : MonoBehaviour {
 	public int value;
 
 	public GameObject pickupEffect;
-
-	// Use this for initialization
-	void Start () {
-		
-	}
 	
-	// Update is called once per frame
-	void Update () {
-		
+	public void OnTriggerEnter(Collider other) {
+		if (layer == (layer | (1 << other.gameObject.layer))) {
+			TriggerPickup(other.gameObject);
+		}
 	}
 
 	void TriggerPickup(GameObject targetObject) {
@@ -31,16 +29,19 @@ public class ResourcePickUp : MonoBehaviour {
 			theirResources.Add(type, value);
 			Destroy(gameObject);
 
+			// maybe play an effect
 			if (pickupEffect != null) {
 				GameObject newEffect = GameObject.Instantiate(pickupEffect);
 				newEffect.transform.position = transform.position;
 			}
+
+			// maybe tell their blackboard about it
+			Blackboard theirBlackboard = targetObject.GetComponent<Blackboard>();
+			if ( theirBlackboard!=null ) {
+				theirBlackboard.Inform(BlackboardEventType.ResourcesAdded, null);
+			}
+			
 		}
 	}
 
-	public void OnTriggerEnter(Collider other) {
-		if (layer == (layer | (1 << other.gameObject.layer)) ) {
-			TriggerPickup(other.gameObject);
-		}
-	}
 }

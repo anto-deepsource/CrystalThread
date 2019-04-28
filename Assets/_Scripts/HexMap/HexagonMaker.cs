@@ -1,4 +1,5 @@
 ﻿//using System;
+using Obi;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -15,70 +16,156 @@ namespace HexMap {
 
 		public Material material;
 
-		public List<PolyShape> obstacles = new List<PolyShape>();
+		public Material wallMaterial;
 
-		private HexTable<HexTile> tileTable = new HexTable<HexTile>();
-		
+		//public List<PolyShape> obstacles = new List<PolyShape>();
+
+		//private HexTable<HexTile> tileTable = new HexTable<HexTile>();
+
 		private HexMap hexMap;
 
 		private MeshBuilder meshBuilder;
 
 		private GameObject tilesFolder;
 
+		private Stack<GameObject> hexTilePool = new Stack<GameObject>();
+
 		private void Start() {
 			meshBuilder = new MeshBuilder();
 			hexMap = GetComponent<HexMap>();
 			tilesFolder = ObjectFactory.Folder("Tiles", transform);
 		}
-		public void Clear() {
+		public void ClearAllTiles() {
 			
 			CommonUtils.DestroyChildren(transform);
-			tileTable.Clear();
+			//tileTable.Clear();
 			//hexWallTable.Clear();
 			//isWallTable.Clear();
 		}
 
-		public void Setup() {
+		public void GenerateTilesAt( int column, int row, int radius ) {
 			hexMap = GetComponent<HexMap>();
 			meshBuilder = new MeshBuilder();
 
 			tilesFolder = ObjectFactory.Folder("Tiles", transform);
-			foreach ( var pos in HexUtils.ForEachTileWithin(0,0,metrics.radius ) ) {
-				HexTile hexTile = NewHexTile(pos.x, pos.y, tileTable);
+			foreach ( var pos in HexUtils.ForEachTileWithin(column, row, radius) ) {
+				HexTile hexTile = NewHexTile(pos.x, pos.y );
 			}
 			
 		}
-		
-		public HexTile NewHexTile(int column, int row, HexTable<HexTile> tileTable) {
+
+		public void ReturnTileToPool(HexTile tile ) {
+			hexTilePool.Push(tile.gameObject);
+			tile.gameObject.SetActive(false);
+		}
+
+		public HexTile GenerateTile(int column, int row) {
+			//if (Application.isPlaying && hexTilePool.Count > 0) {
+			//	var reuseTile = hexTilePool.Pop();
+			//	return RecycleTile(reuseTile, column, row);
+			//}
+			//else {
+			return NewHexTile(column, row);
+			//}
+		}
+
+		//private HexTile RecycleTile(GameObject tile, int column, int row) {
+		//	Vector3 pos = HexUtils.PositionFromCoordinates(column, row, metrics.tileSize);
+		//	tile.gameObject.SetActive(true);
+		//	Mesh hexMesh;
+		//	MeshFilter filter = tile.GetComponent<MeshFilter>();
+		//	hexMesh = meshBuilder.BaseHexagon(metrics, hexMap, column, row, filter.mesh);
+		//	filter.mesh = hexMesh;
+
+		//	MeshRenderer renderer = tile.GetComponent<MeshRenderer>();
+		//	if (material != null) {
+		//		renderer.material = material;
+		//	}
+		//	MeshCollider collider = tile.GetComponent<MeshCollider>();
+		//	collider.sharedMesh = hexMesh;
+		//	tile.layer = gameObject.layer;
+
+		//	HexTile hexTile = tile.GetComponent<HexTile>();
+		//	hexTile.column = column;
+		//	hexTile.row = row;
+		//	hexTile.metrics = metrics;
+		//	hexTile.map = hexMap;
+		//	hexTile.NavMeshBuilt = false;
+
+		//	tile.transform.localPosition = pos;
+
+		//	//hexTile.staticObstacles.AddRange(obstacles);
+
+		//	//hexTile.BuildNavMesh();
+
+		//	return hexTile;
+		//}
+
+		private HexTile NewHexTile( Vector2Int pos ) {
+			return NewHexTile(pos.x, pos.y);
+		}
+
+		private HexTile NewHexTile(int column, int row ) {
 
 			Vector3 pos = HexUtils.PositionFromCoordinates(column, row, metrics.tileSize);
 
-			Mesh hexMesh;
 
-			hexMesh = meshBuilder.WallsHexagon( metrics, hexMap, column, row);
 
 			//if ( IsWallAt( column, row ) ) {
 			//	hexMesh = MountainHexagon(tileSize, column, row );
 			//} else {
 			//	hexMesh = Hexagon(tileSize, pos);
 			//}
-			
-			GameObject tile = NewMeshedObject("Tile", tilesFolder.transform, hexMesh, material);
+
+			string name = string.Format("Tile ({0},{1})", column, row);
+			GameObject tile = ObjectFactory.Folder(name, tilesFolder.transform);
 			tile.layer = gameObject.layer;
+			tile.transform.localPosition = pos;
 
 			HexTile hexTile = tile.AddComponent<HexTile>();
+			
 			hexTile.column = column;
 			hexTile.row = row;
 			hexTile.metrics = metrics;
 			hexTile.map = hexMap;
-			
-			tile.transform.localPosition = pos;
 
-			hexTile.staticObstacles.AddRange(obstacles);
+			// Ground Mesh
+			{
+				Mesh hexMesh;
+				hexMesh = meshBuilder.ElevatedTileHexagon(metrics, hexMap, column, row);
+				GameObject groundMesh = NewMeshedObject("Ground Mesh", tile.transform, hexMesh, material);
+				groundMesh.layer = gameObject.layer;
+				hexTile.reusableMeshes.Add(hexMesh);
+				groundMesh.transform.localPosition = Vector3.zero;
+				//var onlyExists = groundMesh.AddComponent<ExistsOnlyWhenInSight>();
+			}
 
-			hexTile.BuildNavMesh();
+			//// Ground Mesh
+			//{
+			//	Mesh hexMesh;
+			//	hexMesh = meshBuilder.WallsHexagon(metrics, hexMap, column, row);
+			//	GameObject groundMesh = NewMeshedObject("Legacy Mesh", tile.transform, hexMesh, material);
+			//	groundMesh.layer = gameObject.layer;
+			//	hexTile.reusableMeshes.Add(hexMesh);
+			//	groundMesh.transform.localPosition = Vector3.zero;
+			//	//var onlyExists = groundMesh.AddComponent<ExistsOnlyWhenInSight>();
+			//}
 
-			tileTable.Set(column, row, hexTile);
+			//// Wall Meshes
+			//foreach (var corner in HexCornerUtils.AllCorners() ) {
+			//	Mesh wallMesh;
+			//	wallMesh = meshBuilder.WallMesh(metrics, hexMap, column, row, corner);
+			//	GameObject wallMeshObject = NewMeshedObject("Wall Mesh " + corner.ToString(),
+			//		tile.transform, wallMesh, wallMaterial);
+			//	wallMeshObject.layer = gameObject.layer;
+			//	hexTile.reusableMeshes.Add(wallMesh);
+			//	wallMeshObject.transform.localPosition = Vector3.zero;
+			//}
+
+
+			//hexTile.staticObstacles.AddRange(obstacles);
+
+			//hexTile.BuildNavMesh();
 
 			return hexTile;
 		}
@@ -92,23 +179,7 @@ namespace HexMap {
 		/// <returns></returns>
 		public Vector2Int WorldPositionToAxialCoords(Vector3 position) {
 			position = transform.InverseTransformPoint(position);
-
-			float q = ((float)Mathf.Sqrt(3)/3f * position.x - 1f/3f * position.z) / metrics.tileSize;
-			float r = (2f/3f * position.z) / metrics.tileSize;
-
-			int rx = Mathf.RoundToInt(q);
-			int ry = Mathf.RoundToInt(r);
-
-			float xDiff = Mathf.Abs(q - rx);
-			float yDiff = Mathf.Abs(r - ry);
-
-			if ( xDiff > yDiff ) {
-				rx = -ry - Mathf.RoundToInt( -q -r );
-			} else {
-				ry = -rx - Mathf.RoundToInt( -q - r);
-			}
-
-			return new Vector2Int(rx,ry);
+			return HexUtils.WorldPositionToAxialCoords(position, metrics);
 		}
 
 		public Vector3 AxialCoordsToWorldPosition(Vector2Int pos ) {
@@ -127,6 +198,10 @@ namespace HexMap {
 			}
 			MeshCollider collider = obj.AddComponent<MeshCollider>();
 			collider.sharedMesh = mesh;
+
+			//ObiRigidbody obiBody = obj.AddComponent<ObiRigidbody>();
+
+			//ObiCollider obiCollider = obj.AddComponent<ObiCollider>();
 
 			return obj;
 		}

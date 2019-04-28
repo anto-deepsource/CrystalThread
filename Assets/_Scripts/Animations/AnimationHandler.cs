@@ -2,20 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AnimationHandler : MonoBehaviour {
+namespace UnitAnimation {
+	public class AnimationHandler : MonoBehaviour {
 
-	public AnimationMaster master;
-	
-	virtual public void Play(AnimationKeys.Key key, float playLength, params AnimationKeys.Mod[] mods ) {
+		public AnimationMaster master;
 
-	}
+		virtual public void Play(AnimationKey key, AnimationData data) {
 
-	virtual public void StopAllAnimations() {
+		}
 
-	}
+		virtual public void StopAllAnimations() {
 
-	public void TriggerEvent(AnimationKeys.Event args) {
-		if ( master!= null)
-			master.TriggerEvent(this, args);
+		}
+
+		public void TriggerEvent(AnimationKeys.Event args) {
+			if (master != null)
+				master.TriggerEvent(this, args);
+		}
 	}
 }

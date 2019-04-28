@@ -31,6 +31,6 @@ MonoBehaviour:
     tilt: 0
     time: 0.5
   deathAnimation:
-  - color: {r: 0, g: 0, b: 0, a: 0}
-    tilt: 0
+  - color: {r: 0.403, g: 0.403, b: 0.403, a: 1}
+    tilt: 15
     time: 2

@@ -11,15 +11,16 @@ namespace HexMap.Pathfinding {
 
 		public bool showGlobal = false;
 		public bool showLocal = true;
+		public bool showMoveVector = false;
 
 		public float yOffset = 0.5f;
 
 		public HexMap hexMap;
 
-		private HexNavAgent agent;
+		//private HexNavAgent agent;
 		private LineRenderer lineRenderer;
 
-		private HexNavLocalAgent localAgent;
+		private HexNavAgent localAgent;
 
 
 
@@ -30,34 +31,53 @@ namespace HexMap.Pathfinding {
 
 		// Update is called once per frame
 		void Update() {
-			gameObject.GetComponentMaybe<HexNavAgent>(ref agent);
-			gameObject.GetComponentMaybe<HexNavLocalAgent>(ref localAgent);
+			//gameObject.GetComponentMaybe<HexNavAgent>(ref agent);
+			gameObject.GetComponentMaybe<HexNavAgent>(ref localAgent);
 
-			if (showGlobal && agent != null && agent.Status==PathStatus.Succeeded) {
-
-				lineRenderer.positionCount = agent.GlobalPathPoints.Count;
-				for (int i = 0; i < agent.GlobalPathPoints.Count; i++) {
-				Vector3 worldCoords = hexMap.AxialCoordsToWorldPositionWithHeight(agent.GlobalPathPoints[i]);
-					lineRenderer.SetPosition(i, worldCoords + Vector3.up * yOffset);
-				}
-
-			} else {
-				lineRenderer.positionCount = 0;
+			if ( localAgent == null ) {
+				localAgent = gameObject.GetComponentInParent<HexNavAgent>();
 			}
 
-			if (showLocal && localAgent != null && 
-				(localAgent.Status == PathStatus.Succeeded || localAgent.Status == PathStatus.Partial)) {
+			if ( localAgent == null ) {
+				return;
+			}
 
-				lineRenderer.positionCount = localAgent.Path.Count;
-				for (int i = 0; i < localAgent.Path.Count; i++) {
-					Vector3 point = localAgent.Path[i];
+			if ( hexMap == null ) {
+				hexMap = HexNavMeshManager.GetHexMap();
+			}
+
+			lineRenderer.positionCount = 1;
+
+			lineRenderer.SetPosition(0, transform.position);
+
+			if (showMoveVector && localAgent != null) {
+				lineRenderer.positionCount = 2;
+				lineRenderer.SetPosition(1, transform.position + localAgent.MoveVector );
+			}
+
+			if (showLocal && localAgent != null ) {
+
+				int startIndex = lineRenderer.positionCount;
+				lineRenderer.positionCount = startIndex + localAgent.LocalPath.Path.Count;
+				for (int i = 0; i < localAgent.LocalPath.Path.Count; i++) {
+					Vector3 point = localAgent.LocalPath.Path[i];
 					float height = hexMap.Metrics.XZPositionToHeight(point, true);
-					lineRenderer.SetPosition(i, point + Vector3.up * yOffset + Vector3.up * height);
+					lineRenderer.SetPosition(i + startIndex, point + Vector3.up * yOffset + Vector3.up * height);
+				}
+			}
+
+			if (showGlobal && localAgent != null ) {
+				int startIndex = lineRenderer.positionCount;
+				lineRenderer.positionCount = startIndex + localAgent.GlobalPath.Path.Count;
+				for (int i = 0; i < localAgent.GlobalPath.Path.Count; i++) {
+					Vector3 point = localAgent.GlobalPath.Path[i];
+					float height = hexMap.Metrics.XZPositionToHeight(point, true);
+					lineRenderer.SetPosition(i + startIndex, point + Vector3.up * yOffset + Vector3.up * height);
 				}
 
-			} else {
-				lineRenderer.positionCount = 0;
 			}
+
+			
 		}
 		
 	}

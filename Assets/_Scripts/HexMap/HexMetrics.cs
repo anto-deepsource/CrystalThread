@@ -13,15 +13,21 @@ namespace HexMap {
 		public int radius = 3;
 		public float mapScale = 1.0f;
 		public float mapHeight = 10f;
+		public float elevationStepHeight = 10f;
 		public float tileSize = 20f;
 		public float tileInnerRadiusPercent = 0.6f;
 		public float tileOuterRadiusPercent = 0.7f;
 		public float outerBridgePercent = 0.8f;
 		public float wallHeight = 10f;
 
+		public int maxElevation = 10;
+		public float elevationNoiseMapResolution = 0.01f;
+
 		public float textureScale = 1.0f;
 
 		public Texture2D noiseMap;
+
+		public Texture2D elevationNoiseMap;
 
 		public float XZPositionToHeight(float x, float z, bool scaleByMapHeight = false) {
 			Vector2 mapPoint = new Vector2(x, z) / tileSize * mapScale;

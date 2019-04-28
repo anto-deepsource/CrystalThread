@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using HexMap.Pathfinding;
+using System;
 
 namespace HexMap {
 
@@ -27,7 +28,7 @@ namespace HexMap {
 
 		public HexMetrics metrics;
 
-		public Mesh sharedMesh;
+		//public Mesh sharedMesh;
 
 		[SerializeField]
 		public List<DelaunayTriangle> triangles = new List<DelaunayTriangle>();
@@ -53,6 +54,8 @@ namespace HexMap {
 
 		public HexMap map;
 
+		public List<Mesh> reusableMeshes = new List<Mesh>();
+
 		private bool _navMeshBuilt = false;
 		public bool NavMeshBuilt {
 			get { return _navMeshBuilt; }
@@ -64,17 +67,28 @@ namespace HexMap {
 			}
 		}
 
-		public void Awake() {
-			sharedMesh = GetComponent<MeshFilter>().sharedMesh;
-		}
+		//public void Awake() {
+		//	sharedMesh = GetComponent<MeshFilter>().sharedMesh;
+		//}
 
 		public void AddStaticObstacle( PolyShape obstacle ) {
-			staticObstacles.Add(obstacle);
+			if ( !staticObstacles.Contains(obstacle) ) {
+				staticObstacles.Add(obstacle);
+				NavMeshBuilt = false;
+			}
 		}
 
-		//private void OnDestroy() {
-		//	MeshPool.Add(GetComponent<MeshFilter>().sharedMesh);
-		//}
+		public void RemoveStaticObstacle(PolyShape obstacle) {
+			if (staticObstacles.Remove(obstacle)) {
+				NavMeshBuilt = false;
+			}
+		}
+
+		private void OnDestroy() {
+			foreach( var mesh in reusableMeshes ) {
+				MeshPool.Add(mesh);
+			}
+		}
 
 		public void BuildNavMesh() {
 			// Start with the full size and shape of the hexagon minus any walls
@@ -100,11 +114,14 @@ namespace HexMap {
 			c.AddPaths(startShape, PolyType.ptSubject, true);
 			c.AddPaths(obstaclePolys, PolyType.ptClip, true);
 			c.Execute(ClipType.ctDifference, solution, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+			//c.Execute(ClipType.ctDifference, solution, PolyFillType.pftPositive, PolyFillType.pftEvenOdd);
 
 			// Triangulate the resulting polygons
 
-			List<PolygonPoint> outsidePoints = new List<PolygonPoint>();
+			List<List<PolygonPoint>> outsidePoints = new List<List<PolygonPoint>>();
 			List<Polygon> holes = new List<Polygon>();
+
+			triangles.Clear();
 
 			PolyNode node = solution.GetFirst();
 
@@ -112,31 +129,35 @@ namespace HexMap {
 				if (node.IsHole) {
 					holes.Add(new Poly2Tri.Polygon(ConvertPoints(node.Contour)));
 				} else {
-					outsidePoints = ConvertPoints(node.Contour) ;
+					outsidePoints.Add( ConvertPoints(node.Contour) );
 				}
 				node = node.GetNext();
 			}
 
-			Poly2Tri.Polygon poly = new Poly2Tri.Polygon(outsidePoints);
+			// TODO: if there is more than one set of points in outsidePoints we can make some assumptions
+				// about which edges are traversable
+			foreach( var points in outsidePoints ) {
+				Poly2Tri.Polygon poly = new Poly2Tri.Polygon(points);
 
-			// Convert each of the holes
-			foreach (Polygon hole in holes) {
-				poly.AddHole(hole);
+				// Convert each of the holes
+				foreach (Polygon hole in holes) {
+					poly.AddHole(hole);
+				}
+
+				// Triangulate it!  Note that this may throw an exception if the data is bogus.
+				try {
+					DTSweepContext tcx = new DTSweepContext();
+					tcx.PrepareTriangulation(poly);
+					DTSweep.Triangulate(tcx);
+					tcx = null;
+				} catch (System.Exception e) {
+					//UnityEngine.Profiling.Profiler.Exit(profileID);
+					throw e;
+				}
+
+				triangles.AddRange(poly.Triangles);
 			}
-
-			// Triangulate it!  Note that this may throw an exception if the data is bogus.
-			try {
-				DTSweepContext tcx = new DTSweepContext();
-				tcx.PrepareTriangulation(poly);
-				DTSweep.Triangulate(tcx);
-				tcx = null;
-			} catch (System.Exception e) {
-				//UnityEngine.Profiling.Profiler.Exit(profileID);
-				throw e;
-			}
-
-			triangles = new List<DelaunayTriangle>( poly.Triangles );
-
+			
 			// try to link all these triangles with any nearby tiles
 			ValidateTriangleNeighbors();
 			CacheConstrainedEdges();
@@ -169,24 +190,27 @@ namespace HexMap {
 												// then these two triangles share an edge
 												int index = theirTriangle.EdgeIndex(ip, iq);
 
-												myTriangle.SetNeighborOnEdge(i, theirTriangle, index);
+												if ( index!= -1) {
+													myTriangle.SetNeighborOnEdge(i, theirTriangle, index);
+													map.ResetLocalNodesEdgesMaybe(theirTriangle);
+
+													// Store this fact so that if this tile's nav mesh ever changes we
+													// can unlink them from us
+													offTileTriangles.Add(new OffTileEdgeData() {
+														myTriangle = myTriangle,
+														edgeIndex = i,
+														theirTriangle = theirTriangle,
+														theirEdgeIndex = index,
+														neighborTile = neighborTile
+													});
+
+													// let that tile know that we messed with its edges
+													messedWithTheirEdges = true;
+
+													break;
+												}
+
 												
-												map.ResetLocalNodesEdgesMaybe(theirTriangle);
-
-												// Store this fact so that if this tile's nav mesh ever changes we
-												// can unlink them from us
-												offTileTriangles.Add( new OffTileEdgeData() {
-													myTriangle = myTriangle,
-													edgeIndex = i,
-													theirTriangle = theirTriangle,
-													theirEdgeIndex = index,
-													neighborTile = neighborTile
-												});
-
-												// let that tile know that we messed with its edges
-												messedWithTheirEdges = true;
-
-												break;
 											}
 										}
 									}
@@ -333,6 +357,9 @@ namespace HexMap {
 		}
 
 		public bool CheckQuadCollidesWithConstrainedEdges( Vector2[] quad ) {
+			if ( !NavMeshBuilt ) {
+				BuildNavMesh();
+			}
 			// we can collision detect this against any of the constrained triangle edges in this tile
 			for (int i = 0; i < constrainedEdges.Count; i += 2) {
 				// take the points two at a time to make an edge

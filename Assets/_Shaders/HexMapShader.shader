@@ -86,7 +86,7 @@
 			fixed4 c = a + b;
 
 			float camDistance = distance(_WorldSpaceCameraPos,IN.worldPos);
-			if ( camDistance < 20 ) {
+			if ( camDistance < 0 ) {
 				c.a = 0.2f;
 			} else
 			if ( camDistance > 1500 ) {

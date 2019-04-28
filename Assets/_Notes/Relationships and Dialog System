@@ -1,0 +1,91 @@
+
+
+Unit Relationships and statuses:
+    -Each unit has a 'relationship' with each other unit, including the player
+    -Depending on the units relationship, the units have a few ways of communicating and interacting with each other
+    -The player has a few options for units that are strangers:
+        -Get Attention
+            -Causes the unit to either engage in a conversation with player or run away
+        -Introduce Self
+            -Causes the player and this unit's relationship to move to introduced with a positive respect
+        -Antagonize
+            -Causes the player and this unit's relationship to move to introduced with a negative respect
+    -The player has a few options for units that are introduced, acquainted, or strongly familiar:
+        -Ask how's it going?
+            -Triggers the event if the unit has a quest or scripted event
+            -Otherwise, begins a sequence of 'Chit Chat':
+                -The player and the unit take turns saying things
+                -The player is always given three or four options:
+                    -Say something positive
+                    -Say something vague
+                    -Say something negative
+                -The unit's response is half reacting to the option the player chose, half saying something of their own from one of those same three categories
+                -Responses are pulled from a pool or generated procedurelly
+                -Certain patterns of the three options have strong affects on the relationship:
+                    -Saying multiple negative things in a row causes respect to decrease
+                    -Saying two vague things then one positive thing is a 'joke' and increases familiarity and respect
+                    -Saying one vague thing, one positive thing, and one negative thing is a 'neg' and decreases respect but increases loyalty
+        -Question
+        -Ask For Something
+            -Exchange Goods
+                -Opens up the player's inventory next to the units where the player can offer things of their own or request items from the unit
+                -Based on the difference between the total values of things offered on the player's side and things requested on the unit's side: the trade is labeled as either a 'Trade' or a 'Gift' or a 'Robbery'
+                -The difference between the total value of goods and the transaction status affect whether the other unit accepts or refuses the offer:
+                    -A Trade for equal amounts of goods increase familiarity and respect
+                    -A Gift for a large value increases familiarity, respect, and loyalty
+                        -A unit might refuse a gift if they have a very low respect and loyalty towards the player
+                    -A Robbery for a large value increases familiarity, but decreases respect
+                        -Accepting or refusing a robbery is based on the other unit's loyalty and respect towards the player
+                    -A Robbery for a small amount is more akin rude haggling
+                -A declined exchange can be 'Insisted' on by the player once or twice, with another small chance of being accepted
+            -Follow Me
+                -The unit either accepts or refuses to temporarily follow the player
+                    -Based on large values for familiarity, respect, and loyalty
+                -The unit will follow the player for some amount of time or until something else comes up
+            -Perform Task
+                -At each point, the unit's needs and statuses are evaluated along with their current relationship to the player and a random roll determines if they accept, refuse, or sometimes hesitate
+                -If the unit refuses, the dialog returns to the root and pressing the matter further has lower chances of success and reduces loyalty and respect
+                -The unit either accepts or refuses to do any task for the player
+                -If the unit accepts, they then await an additional form of input from the player, indicating the task
+                -If the unit is incapable of performing the task they say so and refuse
+                -If the unit is capable of performing the task but reluctant, they say so and hesitate
+                -If the player 'Insists' while the unit is hesitating, they have a higher chance of accepting the task
+                -After hesitating, the unit either accepts or refuses
+                -If the unit accepts, they perform the task, their loyalty increases, and they evaluate whether it was rewarding
+                    -The player can influence the reward the unit feels by saying either something positive or negative
+                -Based on the reward of the task, the unit's respect towards the player changes and their likelyhood of doing that task by themselves increase or decreases
+            -Join My Team
+                -The unit either accepts or refuses to join the player's team
+        -Antagonize
+
+    -A relationship is unidirection, where "player -> unitA" and "unitA -> player" are two different relationships, each defining the first's values in respect to the second's
+    -A relationship has float statistics that increase and decrease with various actions:
+        -Short-Term Familiarity
+            -[0,1) real number
+            -starts at zero
+            -increases with each interaction, maxing out quickly, and decays at a medium rate over time
+            -higher values unlock chit chat, question, and ask for something options such as:
+                -Ask about someone specific
+                -Ask something personal
+        -Long-Term Familiarity
+            -[0,1) real number
+            -starts at zero
+            -increases very slowly at all times after meeting, but increases slightly faster while the units are within proximity of each other
+            -higher values unlock chit chat, question, and ask for something options
+                -Ask for money
+                -Ask for gear
+                -Ask to be companion
+        -Respect
+            -(-1, 1) real number value that starts at zero
+            -Certain actions affect it positively, certain negatively
+            -Values closer to -1 represent that this unit fears or hates the other
+            -Values closer to -1 represent that this unit likes or adores the other
+            -More extreme values cause Loyalty to increase faster
+        -Loyalty
+            -[0,1) real number that starts at zero
+            -Represents how willing this unit is to do something for the other unit
+            -Values closer to zero mean the unit couldn't care less
+            -Values closer to 1 mean the unit would give their life for the other
+            -Combined with Respect, values closer to 1 unlock the same options, just different versions:
+                -Request/Demand money
+                -Request/Demand do task

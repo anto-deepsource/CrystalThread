@@ -1,0 +1,31 @@
+
+
+Unit resources/inventory
+	-Resources - can carry any number
+		-Lightstones
+		-Rockpaste
+		
+	-Weapon/Tool slot
+		- Currently equipped weapon or tool
+		
+	-Haul slot
+		- A large item that can be picked up and set down somewhere else
+		- Disables the unit from certain abilities while carrying something
+		
+Persistency / Level of Detail
+	-Units and objects within a certain range of the player are rendered and handled fully
+	-Persistent units and objects outside that certain range are tracked and updated but more simply
+		-Physics and collision are disabled
+		-Position and velocity are averaged
+	-Inpersistent units and objects outside that range are destroyed and forgotten
+	
+	
+Range Weapons
+	-Three types:
+		-BulletRay - Instantly calculates the point hit by the weapon using a raycast
+		-Projectile - Instantiates one or more gameobjects that travel in (more or less) a straight line and apply damage to the first thing hit (if any)
+	
+	-Bullet Ray 
+		-Uses a raycast from a 'retical' point on the players screen to mark an 'aiming' point in the world
+		-Uses a second raycast from the tip of the player's weapon to the aiming point to determine what actually gets hit
+		

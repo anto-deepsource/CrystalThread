@@ -7,18 +7,16 @@ public class DropToGround : MonoBehaviour {
 	[Tooltip("The layer used for checking whether the character is grounded and also for positioning the camera.")]
 	public LayerMask groundLayer;
 	public bool controlRotation = false;
-	
 
-	// Use this for initialization
-	void Start () {
-		
-	}
+	public Vector3 offset = Vector3.zero;
+
+	public Vector3 castPositionOffset = Vector3.zero;
 	
-	// Update is called once per frame
 	void Update () {
 		RaycastHit camRayhit;
-		if (Physics.Raycast(transform.parent.position, Vector3.down, out camRayhit, 100, groundLayer)) {
-			transform.position = camRayhit.point + Vector3.up * 0.1f;
+		if (Physics.Raycast(transform.parent.position + castPositionOffset, 
+				Vector3.down, out camRayhit, 100, groundLayer)) {
+			transform.position = camRayhit.point + offset;
 
 			if (controlRotation) {
 				transform.rotation = Quaternion.LookRotation(camRayhit.normal);

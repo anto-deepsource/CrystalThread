@@ -1,0 +1,87 @@
+
+Hive  Mind AI
+    -An intangible 'agent' that controls a one or more corporeal agents
+        -Uses their sensors as its own and uses the agents as actuators
+    -Each corporeal agent is capable of predefined, specific tasks, and the hive mind can broadly tell them to do one task or another on a particular target or in a particular area and the corporeal agent will handle the details
+    -The hive mind can provide formation information to its agent if it recognizes that they are moving as a group
+        -Formations consist of predefined sets of relative positions
+        -Corporeal units are assigned a slot/index in the formation then where the center of the formation currently is and how its oriented, and the corporeal unit will do its best to maintain that position as its moving
+    -The hive mind agent abstractly maintains a position or 'center'
+    -Colony type:
+        -Calculates the colony's 'needs' and assigns an appropriate number of units to complete tasks in order to fix or increase those needs
+        -The colony has ways of measuring recent average incomes and expenses
+        -It uses the projected need and projected income to determine where future focus should be put
+        -Some measurements:
+            -Man Power
+                -Basically the number of corporeal agents in the colony
+                -Always trying to increase man power, but the need for more manpower is usually weaker than the cost of maintaining a unit
+            -Food
+                -If a unit requires food to live
+            -Safety or Weaponry
+                -A measure of future threats that require attacking or defending
+        -If all needs are met then the colony has further goals such as:
+            -expanding
+            -settling a new colony
+            -staging an attack on nearby enemies
+        -The 'center' of the colony is chosen once and remains stationary
+            -If the colony builds any buildings, they are in the area around the center
+        -Can be used to describe a group of humans building a small town or a family of squirrels living in a tree
+    -Grazers type:
+        -Fluctuates between two states of 'migrating' and 'grazing' based on the season or food availability
+        -While migrating, the hive mind picks a direction or a far away destination and moves all the corporeal agents in that direction, moving the 'center' of the hive with them
+            -Upon reaching that destination or an otherwise ideal area, the hive mind switches to 'grazing' mode
+        -While grazing, the agents of the hive wander around a small/medium sized area, using the resources there until they are gone
+            -After a medium/long amount of time or if the resources run out, the hive switches to 'migrating' mode
+        -When faced with a threat in either mode, smaller corporeal agents will flee while larger corporeal agents will attack the threat and attempt to protect smaller agents
+            -Larger agents will still value their own life to a large degree and avoid conflict if possible
+    -Hunting pack type:
+        -Regularly switches between two states of 'camping' and 'hunting'
+        -In either state, the hive keeps the units together or at least within a certain distance of each other
+            -The 'center' of the hive is the center of mass of its units
+                -Causing this group to be 'nomadic'
+        -While camping, the units stick to one area; they sleep, heal, and otherwise repair and rest.
+            -After a short amount of time or if the team gets 'hungry' the hive switches to 'hunting'
+        -While hunting, the units move together in a particular direction or to a particular area
+            -If they encounter any 'prey' they attack and work as a team to kill it
+            -If the prey manages to escape they pick another destination and continue moving
+            -If the prey manages to do significant damage to the team or if more enemies show up, they retreat to safe distance, reevaluate and sometimes then pick an opposite direction and continue moving
+            -If they manage to kill the prey, the hive switches to 'camping' where they process/eat the prey
+    -Pride type:
+        -Variation of the hunting pack type, more akin to a pride of lions:
+        -The 'center' of the hive is a fixed location where smaller units stay, always 'camping'
+        -The hive balances sending larger units out ( in one or more teams, to hunt and bring killed prey back to the camp) and protecting the camp
+        -Can be used to describe a group of large cats that hunt then bring food back to their cubs or a snake and her clutch of eggs
+    -Players Party type:
+        -A hive that controls any allies in the player's party
+        -The hive stays in one of two states based on which one the player last told the group: 'follow player' or 'hold this position'
+        -While following the player, the hive tries to measure whether the player is 'traveling' or 'hanging out'
+            -Where traveling means the player is and has been and will be moving in a particular direction, probably trying to get somewhere
+            -Where hanging out means the player may or may not actually be doing anything, but is staying generally in the same area
+            -If the player is travelling, the hive follows the player, keeping the units in some formation relative to the player
+            -If the player is hanging out, the units wander around in the same area, resting or otherwise being interesting
+        -When the player says 'hold this position', the player's indicated position is used as the center and the hive has the units position themselves tactically and await threats or further orders
+        -In either state, if an enemy threat is detected, the units work together to attack the enemies
+            -Detecting an enemy includes:
+                -The player engaging with an enemy (either attacking or being attacked)
+                -Any unit being attacked by an enemy
+                -A sighted enemy seeing any unit and going hostile
+                -But not necessarily just upon sighting an enemy
+                    -Just because, as a player, I don't always want my companion attacking on-sight
+            -During battle, the hive tries to measure:
+                -Whether the player is battling or retreating
+                -Whether the enemy is doing considerably more damage then the player and their allies
+            -If the hive decides that the player is retreating, the units retreat with them
+            -If the hive decides that its losing the battle, it might:
+                -Alert/hint to the player by means of one of the allies saying so
+                -Cause one or more units to flee
+                -Cause one or more units to do a kamikaze attack
+    -Conquerer type
+        -Picks a colony type hive agent and works to weaken and defeat them
+        -Broadly:
+            -Cuts off resources
+            -Physically surrounds them
+            -Kills the colony's units whenever
+            -Attacks auxilary structures or outpost bases
+            -Measures the colony's defensive strength and, when it is low enough, attacks the main part of the colony
+            -Works to destroy any of the colony's units and buildings until all the units are dead or the colony surrenders
+            -Absorbs the colony, repurposing the remaining units and buildings

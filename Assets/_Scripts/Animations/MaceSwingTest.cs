@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnitAnimation;
 using UnityEngine;
 
 public class MaceSwingTest : AnimationHandler {
@@ -30,17 +31,18 @@ public class MaceSwingTest : AnimationHandler {
 		}
 	}
 
-	override public void Play(AnimationKeys.Key key, float playLength, params AnimationKeys.Mod[] mods) {
-		if ( key==AnimationKeys.Key.Attack ) {
+	override public void Play(AnimationKey key, AnimationData data) {
+		if ( key==AnimationKey.Attack ) {
 			//Debug.Log("Mace Swing Attack");
 			AnimationState animState = GetComponent<Animation>()["Mace_Swing"];
-			if ( playLength > 0 )
-				animState.speed =  animState.length/ playLength;
+			float length = data.Length;
+			if (length > 0 )
+				animState.speed =  animState.length/ length;
 			if ( !animationController.enabled ) {
 				animationController.enabled = true;
 			}
 			animationController.PlayAnimation(animState);
-			leftSwipe.SetTime(playLength, 0, 1);
+			leftSwipe.SetTime(length, 0, 1);
 			swinging = true;
 		}
 	}

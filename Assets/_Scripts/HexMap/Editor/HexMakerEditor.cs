@@ -14,15 +14,9 @@ namespace HexMap {
 			DrawDefaultInspector();
 
 			hexMaker = (HexagonMaker)target;
-
-			if (GUILayout.Button("Generate Tile")) {
-				hexMaker.Setup();
-				UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-
-			}
-
+			
 			if (GUILayout.Button("Clear")) {
-				hexMaker.Clear();
+				hexMaker.ClearAllTiles();
 				UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
 
 			}

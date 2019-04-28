@@ -287,9 +287,9 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1755698036893472}
-  m_LocalRotation: {x: -0, y: 0.9533562, z: -0, w: -0.30184755}
-  m_LocalPosition: {x: 0, y: -0.12, z: 0}
-  m_LocalScale: {x: 8.386532, y: 8.386532, z: 1}
+  m_LocalRotation: {x: -0, y: 0.9624611, z: -0, w: -0.27141955}
+  m_LocalPosition: {x: 0, y: -0.12000024, z: 0}
+  m_LocalScale: {x: 3.8481336, y: 3.8481336, z: 1}
   m_Children: []
   m_Father: {fileID: 4778999399077964}
   m_RootOrder: 0
@@ -301,7 +301,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1765198238291208}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 57.7, y: 8, z: 59.6}
+  m_LocalPosition: {x: 56.26, y: 1.86, z: 71.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4660983284455172}
@@ -517,9 +517,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   master: {fileID: 0}
   materialPack: {fileID: 11400000, guid: b5a5e8f3c27e3ad4ca1b0605012e19df, type: 2}
-  spriteSheet: {fileID: 21300004, guid: bca993e69e7478f49a546b25f9c4d973, type: 3}
+  spriteSheet: {fileID: 21300000, guid: a09ca8911a3598142aa35f0a3b335baa, type: 3}
   scaleToCollider: 1
   spriteType: 1
+  facingOrder: 1
   billboard: 1
   tilt: 0
 --- !u!114 &114466599560055948
@@ -619,6 +620,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1f2715d68e1b9e4ab074989dca67819, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 512
   targetPoint: {x: 0, y: 0, z: 0}
   target: {fileID: 0}
   affected: []
@@ -629,7 +633,10 @@ MonoBehaviour:
   fullHealth: 10
   staggerTime: -0.84
   lifted: 0
-  moveSpeed: 18
+  radius: 0.5
+  moveSpeed: 12
+  weight: 30
+  moveVector: {x: 0, y: 0, z: 0}
   attackSpeed: 0.6
 --- !u!120 &120024387283759768
 LineRenderer:
@@ -728,10 +735,10 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 2
+  m_Radius: 0.74
+  m_Height: 2.21
   m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
+  m_Center: {x: 0, y: 1.08, z: 0}
 --- !u!136 &136239823776066458
 CapsuleCollider:
   m_ObjectHideFlags: 1
@@ -4239,7 +4246,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0.8088235, b: 0.39286733, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

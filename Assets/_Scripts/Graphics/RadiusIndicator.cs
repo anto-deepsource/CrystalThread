@@ -7,6 +7,7 @@ using UnityEngine;
 /// 
 /// </summary>
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+[ExecuteInEditMode]
 public class RadiusIndicator : MonoBehaviour {
 
 	[NonSerialized] List<Vector3> vertices;
@@ -26,7 +27,7 @@ public class RadiusIndicator : MonoBehaviour {
 
 	public float radius = 3f;
 
-	void Start() {
+	void OnEnable() {
 		Setup();
 	}
 
@@ -76,12 +77,12 @@ public class RadiusIndicator : MonoBehaviour {
 		float twoPI = Mathf.PI * 2.0f;
 		float delta = twoPI / (float)segments;
 
-		float lastTheta = startAngle;
+		float lastTheta = Mathf.Deg2Rad *startAngle;
 		Vector3 lastLeg;
 		Vector3 leg;
 		Vector2 uvCenter = new Vector2(0.5f, 0.5f);
 		for ( int i = 0; (float)(i-1)/(float)segments <= value; i ++ ) {
-			float theta = startAngle - Mathf.Min( i * delta, value * twoPI);
+			float theta = Mathf.Deg2Rad * startAngle - Mathf.Min( i * delta, value * twoPI);
 
 			lastLeg = new Vector3(Mathf.Cos(lastTheta), 0, Mathf.Sin(lastTheta));
 			leg = new Vector3(Mathf.Cos(theta), 0, Mathf.Sin(theta));

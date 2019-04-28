@@ -57,6 +57,9 @@ namespace HexMap {
 			return columnBucket.ContainsKey(row);
 		}
 
+		public void Remove(Vector2Int pos) {
+			Remove(pos.x, pos.y);
+		}
 
 		public void Remove(int column, int row) {
 			// Remove the tile from the columnDict

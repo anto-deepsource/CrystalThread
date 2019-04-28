@@ -27,4 +27,18 @@ public class Ease {
 				return -c / 2 * (Mathf.Cos(Mathf.PI * t / d) - 1) + b;
 		}
 	}
+
+	public static Vector3 EaseOut( Vector3 start, Vector3 end, float value ) {
+
+		float t = Mathf.Sin(value * PI_HALVES);
+
+		return Vector3.Lerp(start, end, t);
+	}
+
+	public static float EaseOut(float start, float end, float value) {
+
+		float t = Mathf.Sin(value * PI_HALVES);
+
+		return Mathf.Lerp(start, end, t);
+	}
 }
