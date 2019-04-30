@@ -348,4 +348,5 @@ public enum BlackboardEventType {
 	Capacitated = 1 << 15,
 	Grappling = 1 << 16,
 	StopGrappling = 1 << 17,
+	PickUpFromGround = 1 << 18,
 }

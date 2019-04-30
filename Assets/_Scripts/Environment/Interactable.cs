@@ -10,8 +10,8 @@ public class Interactable : MonoBehaviour {
 	public InteractionObject interactionObject;
 
 	void Update () {
-		//if (Input.GetButtonDown("Interact")) {
-		//	interactionSystem.StartInteraction(FullBodyBipedEffector.RightHand, interactionObject, true);
-		//}
+		if (Input.GetButtonDown("Interact")) {
+			interactionSystem.StartInteraction(FullBodyBipedEffector.RightHand, interactionObject, true);
+		}
 	}
 }

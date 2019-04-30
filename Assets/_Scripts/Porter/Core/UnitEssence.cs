@@ -377,6 +377,10 @@ public class UnitEssence : MonoBehaviour {
 		myBody.AddForce(-myBody.velocity * Time.deltaTime * rate, ForceMode.Impulse);
 	}
 
+	public Vector3 GetCurrentVelocity() {
+		return myBody.velocity;
+	}
+
 	public void SetVerticalVelocity(float y ) {
 		myBody.velocity = new Vector3(myBody.velocity.x, y, myBody.velocity.z);
 	}
@@ -435,6 +439,26 @@ public class UnitEssence : MonoBehaviour {
 
 	public void StopGrappling(Grappable grappable) {
 		Events.Fire(BlackboardEventType.StopGrappling, null);
+	}
+
+	public void PickUpEqippableWeapon(EquippableWeapon nearestWeapon) {
+		Events.Fire(BlackboardEventType.PickUpFromGround, null);
+	}
+
+	public void OverrideControl(MonoBehaviour overridingController) {
+		currentControllers.Push(overridingController);
+	}
+
+	public void RelinquishControl(MonoBehaviour controller) {
+		if (ControllerIsInControl(controller)) {
+			currentControllers.Pop();
+		} else {
+			// the given controller is not currently in control,
+			// but we want to remove it from the stack still
+			if ( currentControllers.Contains(controller) ) {
+				Debug.Log("Given controller not currenty in control: " +controller.name);
+			}
+		}
 	}
 
 	public bool ControllerIsInControl(MonoBehaviour controller) {

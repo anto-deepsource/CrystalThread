@@ -83,6 +83,7 @@ public class PlayerGrappleController : MonoBehaviour {
 	/// Take over control of the character and move them into position
 	/// </summary>
 	private void MoveIntoGrappleUpdate() {
+		
 		var vector = targetGrappable.transform.position.JustXZ() - grappleTarget.position.JustXZ();
 		if ( vector.sqrMagnitude < positionTolerance * positionTolerance) {
 			movingIntoGrapple = false;

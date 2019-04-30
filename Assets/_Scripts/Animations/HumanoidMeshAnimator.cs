@@ -74,35 +74,13 @@ public class HumanoidMeshAnimator : AnimationHandler {
 
 	private void EssenceCallbacks(int eventCode, object data) {
 		switch ((BlackboardEventType)eventCode) {
-			case BlackboardEventType.Staggered:
-				break;
-			case BlackboardEventType.StaggeredEnd:
-				break;
-			case BlackboardEventType.Damaged:
-				break;
-			case BlackboardEventType.ResourcesAdded:
-				break;
-			case BlackboardEventType.ResourcesRemoved:
-				break;
+			
 			case BlackboardEventType.Death:
 				break;
 			case BlackboardEventType.Incapacitated:
 				animator.SetTrigger("Incapacitated");
 				break;
-			case BlackboardEventType.PositiveUnitInteraction:
-				break;
-			case BlackboardEventType.NeutralUnitInteraction:
-				break;
-			case BlackboardEventType.NegativeUnitInteraction:
-				break;
-			case BlackboardEventType.AlertToDangerInteraction:
-				break;
-			case BlackboardEventType.EnemySpotted:
-				break;
-			case BlackboardEventType.Healed:
-				break;
-			case BlackboardEventType.GameobjectDestroyed:
-				break;
+			
 			case BlackboardEventType.Grappling:
 				animator.SetTrigger("Grapple");
 				break;
@@ -111,6 +89,9 @@ public class HumanoidMeshAnimator : AnimationHandler {
 				break;
 			case BlackboardEventType.StopGrappling:
 				animator.SetTrigger("StopGrab");
+				break;
+			case BlackboardEventType.PickUpFromGround:
+				animator.SetTrigger("PickUpFromGround");
 				break;
 		}
 	}
