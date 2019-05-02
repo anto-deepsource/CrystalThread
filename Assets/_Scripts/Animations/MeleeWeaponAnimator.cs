@@ -37,6 +37,16 @@ public class MeleeWeaponAnimator : AnimationHandler {
 
 	public bool manualFire = false;
 
+	public ExtraEvent<MeleeWeaponEvent> Events {
+		get {
+			if (_events == null) {
+				_events = new ExtraEvent<MeleeWeaponEvent>(this);
+			}
+			return _events;
+		}
+	}
+	ExtraEvent<MeleeWeaponEvent> _events;
+
 	//bool dead = false;
 
 	private void Start() {
@@ -146,13 +156,21 @@ public class MeleeWeaponAnimator : AnimationHandler {
 		TriggerEvent(AnimationKeys.Event.End);
 		swinging = false;
 		//damageComponent.on = false;
+		Events.Fire(MeleeWeaponEvent.EndSwing);
 	}
 
 	public void StartWeaponTrail() {
 		weaponTrail.SetTime(1, 0.1f, 1);
+		//Events.Fire(MeleeWeaponEvent.StartSwing);
+		
 	}
 
 	public void StopWeaponTrail() {
 		weaponTrail.SetTime(0, 0.1f, 1);
+		//Events.Fire(MeleeWeaponEvent.EndSwing);
 	}
+}
+public enum MeleeWeaponEvent {
+	StartSwing,
+	EndSwing,
 }

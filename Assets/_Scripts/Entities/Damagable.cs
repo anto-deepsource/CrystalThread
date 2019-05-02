@@ -10,6 +10,6 @@ using UnityEngine;
 /// 
 /// </summary>
 public abstract class Damagable : MonoBehaviour {
-
+	
 	public abstract void ApplyDamage(DamageSource source);
 }

@@ -19,6 +19,8 @@ public class HealthComponent : Damagable {
 
 	[Header("UI Display")]
 	public bool useInGameText = false;
+	public Canvas inGameTextCanvas;
+	public GameObject inGameTextPrefab;
 	//public Slider currentSlider;
 	//public Slider maxSlider;
 
@@ -33,8 +35,7 @@ public class HealthComponent : Damagable {
 
 	#region Private Members
 
-	private Canvas inGameTextCanvas;
-	private GameObject inGameTextPrefab;
+	
 
 	#endregion
 
@@ -42,9 +43,14 @@ public class HealthComponent : Damagable {
 
 	public void Awake() {
 		if (useInGameText) {
-			// TODO: use the HUD canvas instead of the in-world canvas like a unit
-			inGameTextCanvas = GetComponentInChildren<Canvas>(true);
-			inGameTextPrefab = inGameTextCanvas.transform.Find("InGameTextPrefab").gameObject;
+			if (inGameTextCanvas == null) {
+				inGameTextCanvas = GetComponentInChildren<Canvas>(true);
+			}
+
+			if ( inGameTextPrefab == null) {
+				inGameTextPrefab = inGameTextCanvas.transform.Find("InGameTextPrefab").gameObject;
+			}
+			
 		}
 
 		IsDead = false;
@@ -96,7 +102,6 @@ public class HealthComponent : Damagable {
 				ApplyDamage(collisionDamage);
 			}
 		}
-		
 	}
 
 	/// <summary>

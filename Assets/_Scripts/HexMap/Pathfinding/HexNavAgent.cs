@@ -196,7 +196,7 @@ namespace HexMap.Pathfinding {
 				MoveVector = Vector3.zero;
 			}
 
-			SteerAwayFromObstacles();
+			//SteerAwayFromObstacles();
 		}
 
 		#region Private Helper Methods

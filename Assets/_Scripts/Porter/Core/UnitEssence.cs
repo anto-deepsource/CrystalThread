@@ -443,6 +443,7 @@ public class UnitEssence : MonoBehaviour {
 
 	public void PickUpEqippableWeapon(EquippableWeapon nearestWeapon) {
 		Events.Fire(BlackboardEventType.PickUpFromGround, null);
+		nearestWeapon.damage.sourceObject = gameObject;
 	}
 
 	public void OverrideControl(MonoBehaviour overridingController) {

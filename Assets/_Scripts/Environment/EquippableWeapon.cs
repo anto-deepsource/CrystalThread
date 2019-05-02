@@ -19,6 +19,10 @@ public class EquippableWeapon : MonoBehaviour {
 
 	public int pickedUpLayer;
 
+	public bool damageOnCollision = false;
+
+	public DamageSource damage;
+
 	private int startLayer;
 	private Transform startParent;
 
@@ -44,5 +48,17 @@ public class EquippableWeapon : MonoBehaviour {
 		myBody.isKinematic = true;
 
 		gameObject.layer = pickedUpLayer;
+	}
+
+	private void OnTriggerEnter(Collider other) {
+		if (!damageOnCollision) {
+			return;
+		}
+
+		Damagable damagable = other.GetComponentInParent<Damagable>();
+		if (damagable != null) {
+			damagable.ApplyDamage(damage);
+		}
+
 	}
 }

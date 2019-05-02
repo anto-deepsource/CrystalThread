@@ -62,15 +62,15 @@ Material:
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DissolveBand: 0.25
-    - _DissolveScale: 0
+    - _DissolveBand: 0.14
+    - _DissolveScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _GlowColFac: 0.64
-    - _GlowIntensity: 2.86
-    - _GlowScale: 1.79
+    - _GlowIntensity: 2.18
+    - _GlowScale: 2.22
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -82,8 +82,8 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 0.25735295, b: 0.25735295, a: 1}
-    - _DissolveEnd: {r: 0, g: 0, b: 0, a: 1}
-    - _DissolveStart: {r: 0.36, g: 0.01, b: 0, a: 1}
+    - _DissolveEnd: {r: 0, g: 0.08, b: 0, a: 1}
+    - _DissolveStart: {r: 0.36, g: 0.06, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Glow: {r: 0.051903117, g: 0.14705884, b: 0.068309285, a: 1}
     - _GlowEnd: {r: 0, g: 1, b: 0.5862069, a: 1}

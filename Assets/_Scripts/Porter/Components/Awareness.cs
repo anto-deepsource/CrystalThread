@@ -97,10 +97,13 @@ namespace Porter {
 					break;
 				case BlackboardEventType.Damaged:
 					DamageSource source = (DamageSource)data;
-					var sourceUnit = source.sourceObject.GetUnitEssence();
-					if ( sourceUnit!=null && sourceUnit!=essence) {
-						UpdateKnowledgeAboutUnit(sourceUnit);
+					if (source.sourceObject != null) {
+						var sourceUnit = source.sourceObject.GetUnitEssence();
+						if (sourceUnit != null && sourceUnit != essence) {
+							UpdateKnowledgeAboutUnit(sourceUnit);
+						}
 					}
+					
 					
 					break;
 				case BlackboardEventType.ResourcesAdded:

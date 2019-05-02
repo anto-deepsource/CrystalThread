@@ -1,12 +1,13 @@
 ﻿using RootMotion.FinalIK;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerEquippableWeaponController : MonoBehaviour {
+public class PlayerEquippableWeaponController : AbstractInteractableActuator {
 
 	public float range = 6f;
-	
+
 	public UnitEssence myEssence;
 
 	public InteractionSystem interactionSystem;
@@ -30,7 +31,7 @@ public class PlayerEquippableWeaponController : MonoBehaviour {
 	public AnimationClip attackAnimation;
 
 	private bool performingPickup = false;
-	private bool movingIntoPosition = false;
+	//private bool movingIntoPosition = false;
 
 	EquippableWeapon targetPickup = null;
 
@@ -43,48 +44,89 @@ public class PlayerEquippableWeaponController : MonoBehaviour {
 
 	private void Start() {
 		weaponAnimator.Play(idleAnimation);
+		weaponAnimator.Events.Add(this, WeaponAnimatorCallbacks);
 	}
 
+	private void WeaponAnimatorCallbacks(object sender, MeleeWeaponEvent eventCode, object data) {
+		switch (eventCode) {
+			case MeleeWeaponEvent.StartSwing:
+				//currentlyEquippedWeapon.damageOnCollision = true;
+				break;
+			case MeleeWeaponEvent.EndSwing:
+				currentlyEquippedWeapon.damageOnCollision = false;
+				break;
+		}
+	}
+
+	public override ActuatorTarget GetBestTarget() {
+		if (!hasSomethingEquipped) {
+			// look for equippable weapons nearby
+			EquippableWeapon[] allWeapons = GameObject.FindObjectsOfType<EquippableWeapon>();
+
+			float nearestDistance = 0;
+			EquippableWeapon nearestWeapon = null;
+
+			foreach (var weapon in allWeapons) {
+				float distance = (transform.position - weapon.transform.position).sqrMagnitude;
+				if (nearestWeapon == null || distance < nearestDistance) {
+					nearestDistance = distance;
+					nearestWeapon = weapon;
+				}
+			}
+
+			if (nearestWeapon != null && nearestDistance < range) {
+				return new ActuatorTarget(nearestWeapon, this, nearestDistance);
+			}
+		}
+		return ActuatorTarget.None();
+	}
+
+	//public override bool IsBlocking() {
+	//	// if we're in the middle of a pickup -> distable other actuators
+	//	if (performingPickup) {
+	//		return true;
+	//	}
+	//	return false;
+	//}
+
+	public override bool UseInteractionEventImmediateMaybe() {
+
+		if (hasSomethingEquipped) {
+			UnequipCurrentlyEquippedWeapon();
+			return true;
+		}
+		return false;
+	}
+
+	override public void StartMoveIntoIdealPositionBestTargetEvent(MonoBehaviour target) {
+		performingPickup = true;
+		myEssence.OverrideControl(this);
+		targetPickup = target as EquippableWeapon;
+	}
+
+	override public void UseInteractionBestTargetEvent(MonoBehaviour target) {
+		ActualPerformPickup();
+		//StartMoveIntoIdealPosition(target as EquippableWeapon);
+	}
+	
 	void Update () {
 		if (stopInteractionAnimation) {
 			interactionSystem.StopInteraction(FullBodyBipedEffector.RightHand);
 			stopInteractionAnimation = false;
 		}
-
-		if (!performingPickup && !hasSomethingEquipped) {
-			if (Input.GetButtonDown("Interact")) {
-				EquippableWeapon[] allWeapons = GameObject.FindObjectsOfType<EquippableWeapon>();
-
-				float nearestDistance = 0;
-				EquippableWeapon nearestWeapon = null;
-
-				foreach (var weapon in allWeapons) {
-					float distance = (transform.position - weapon.transform.position).sqrMagnitude;
-					if (nearestWeapon == null || distance < nearestDistance) {
-						nearestDistance = distance;
-						nearestWeapon = weapon;
-					}
-				}
-
-				if (nearestWeapon != null && nearestDistance < range) {
-					StartMoveIntoIdealPosition(nearestWeapon);
-				}
-			}
-		} else 
+		
 		if (performingPickup) {
 
-			if (movingIntoPosition) {
-				MoveIntoIdealPosition();
-			}
+			//if (movingIntoPosition) {
+			//	MoveIntoIdealPosition();
+			//}
 			
 		}
 		else
 		if (hasSomethingEquipped) {
-			if (Input.GetButtonDown("Interact")) {
-				UnequipCurrentlyEquippedWeapon();
-			}else
+
 			if (Input.GetMouseButtonDown(1)) {
-				weaponAnimator.Play(attackAnimation);
+				StartWeaponSwing();
 			}
 			else {
 				if (smoothHandPosition) {
@@ -106,50 +148,51 @@ public class PlayerEquippableWeaponController : MonoBehaviour {
 
 	}
 
-	private void StartMoveIntoIdealPosition(EquippableWeapon nearestWeapon) {
-		performingPickup = true;
-		movingIntoPosition = true;
-		myEssence.OverrideControl(this);
-		targetPickup = nearestWeapon;
-	}
 
-	/// <summary>
-	/// Take over control of the character and move them into position
-	/// </summary>
-	private void MoveIntoIdealPosition() {
-		//bool moveIntoNextPhase = false;
+	//private void StartMoveIntoIdealPosition(EquippableWeapon nearestWeapon) {
+	//	performingPickup = true;
+	//	//movingIntoPosition = true;
+	//	myEssence.OverrideControl(this);
+	//	targetPickup = nearestWeapon;
+	//}
 
-		var currentVelocity = myEssence.GetCurrentVelocity();
-		bool withinIdealVelocity = currentVelocity.sqrMagnitude < idealInteractionVelocityTolerance * idealInteractionVelocityTolerance;
+	///// <summary>
+	///// Take over control of the character and move them into position
+	///// </summary>
+	//private void MoveIntoIdealPosition() {
+	//	//bool moveIntoNextPhase = false;
 
-		var vector = targetPickup.transform.position.JustXZ() - idealInteractionPosition.position.JustXZ();
+	//	var currentVelocity = myEssence.GetCurrentVelocity();
+	//	bool withinIdealVelocity = currentVelocity.sqrMagnitude < idealInteractionVelocityTolerance * idealInteractionVelocityTolerance;
 
-		// if the distance from the target point to the pickup is less than a certain distance -> move into next phase
-		float tolerance = idealInteractionPositionTolerance * idealInteractionPositionTolerance;
-		bool withinIdealPosition = vector.sqrMagnitude < tolerance;
-		if (withinIdealPosition) {
-			myEssence.MoveVector = Vector3.zero;
-		} else {
-			myEssence.MoveVector = vector.FromXZ();
-		}
+	//	var vector = targetPickup.transform.position.JustXZ() - idealInteractionPosition.position.JustXZ();
+
+	//	// if the distance from the target point to the pickup is less than a certain distance -> move into next phase
+	//	float tolerance = idealInteractionPositionTolerance * idealInteractionPositionTolerance;
+	//	bool withinIdealPosition = vector.sqrMagnitude < tolerance;
+	//	if (withinIdealPosition) {
+	//		myEssence.MoveVector = Vector3.zero;
+	//	} else {
+	//		myEssence.MoveVector = vector.FromXZ();
+	//	}
 		
 
-		vector = targetPickup.transform.position.JustXZ() - transform.position.JustXZ();
-		myEssence.TurnVector = vector.normalized;
+	//	vector = targetPickup.transform.position.JustXZ() - transform.position.JustXZ();
+	//	myEssence.TurnVector = vector.normalized;
 
-		//// if the distance from us to the pickup is less than the distance to the ideal position -> move into next phase
-		//var idealPositionRange = (idealInteractionPosition.position.JustXZ() - transform.position.JustXZ()).sqrMagnitude;
-		//if (vector.sqrMagnitude < idealPositionRange) {
-		//	moveIntoNextPhase = true;
-		//}
+	//	//// if the distance from us to the pickup is less than the distance to the ideal position -> move into next phase
+	//	//var idealPositionRange = (idealInteractionPosition.position.JustXZ() - transform.position.JustXZ()).sqrMagnitude;
+	//	//if (vector.sqrMagnitude < idealPositionRange) {
+	//	//	moveIntoNextPhase = true;
+	//	//}
 
-		if (withinIdealVelocity && withinIdealPosition) {
-			ActualPerformPickup();
-		}
-	}
+	//	if (withinIdealVelocity && withinIdealPosition) {
+	//		ActualPerformPickup();
+	//	}
+	//}
 
 	private void ActualPerformPickup() {
-		movingIntoPosition = false;
+		//movingIntoPosition = false;
 		myEssence.MoveVector = Vector3.zero;
 		myEssence.TurnVector = Vector2.zero;
 		myEssence.PickUpEqippableWeapon(targetPickup);
@@ -219,6 +262,12 @@ public class PlayerEquippableWeaponController : MonoBehaviour {
 		handEffector.target = rightHandTargetIdlePosition;
 		handEffector.positionWeight = .9f;
 		handEffector.rotationWeight = .9f;
+
+	}
+
+	private void StartWeaponSwing() {
+		weaponAnimator.Play(attackAnimation);
+		currentlyEquippedWeapon.damageOnCollision = true;
 
 	}
 }
