@@ -440,7 +440,7 @@ public class UnitEssence : MonoBehaviour {
 	public void StopGrappling(Grappable grappable) {
 		Events.Fire(BlackboardEventType.StopGrappling, null);
 	}
-
+	
 	public void PickUpEqippableWeapon(EquippableWeapon nearestWeapon) {
 		Events.Fire(BlackboardEventType.PickUpFromGround, null);
 		nearestWeapon.damage.sourceObject = gameObject;

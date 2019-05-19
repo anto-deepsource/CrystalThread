@@ -8,7 +8,7 @@ public class PlayerGrappleController : AbstractInteractableActuator {
 
 	public float range = 6f;
 
-	public float positionTolerance = 0.2f;
+	//public float positionTolerance = 0.2f;
 
 	public UnitEssence myEssence;
 
@@ -29,19 +29,37 @@ public class PlayerGrappleController : AbstractInteractableActuator {
 	public Transform rightHandHoldPosition;
 
 	public FullBodyBipedIK ik; // Reference to the FBBIK component
+	public Grounder grounder;
+
 
 	public float springStrength = 100000f;
 	public float springPullInSpeed = 1;
 
+	//public Transform missionaryTargetPosition;
+	//public Transform missionaryInteractionPosition;
+	//public Transform missionaryInteractionInPosition;
+	//public Transform missionaryVictimPosition;
+	//public float missionarySpeed = 1f;
+
 	private bool grappling = false;
 	//private bool movingIntoGrapple = false;
 	private bool actualGrappling = false;
+	//private bool inMissionary = false;
 
 	private Grappable targetGrappable = null;
 
-	private SpringForce chestSpring;
-	private SpringForce hipsSpring;
-	private SpringForce leftSpring;
+	//private SpringForce chestSpring;
+	//private SpringForce hipsSpring;
+	//private SpringForce leftSpring;
+
+	//private void Update() {
+	//	if (grappling && Input.GetButtonDown("Secondary Interact")) {
+	//		MoveIntoMissionary();
+	//	}
+	//	if (inMissionary) {
+	//		ik.solver.bodyEffector.position = MissionaryTopPelvisPosition();
+	//	}
+	//}
 
 	public override ActuatorTarget GetBestTarget() {
 		if (!grappling) {
@@ -59,19 +77,25 @@ public class PlayerGrappleController : AbstractInteractableActuator {
 			}
 
 			if (nearestGrappable != null && nearestDistance < range) {
-				return new ActuatorTarget(nearestGrappable, this, nearestDistance);
+				return new ActuatorTarget(nearestGrappable, this, nearestDistance, "Grapple");
 			}
 		}
 		return ActuatorTarget.None();
 	}
-	
-	//public override bool IsBlocking() {
-	//	// if we're moving into grapple -> override other actuators
-	//	if (movingIntoGrapple) {
-	//		return true;
-	//	}
-	//	return false;
-	//}
+
+	public override bool IsImmediateInteraction() {
+		if (grappling) {
+			return true;
+		}
+		return false;
+	}
+
+	public override string GetImmediateInteractionLabel() {
+		if (grappling) {
+			return "Release";
+		}
+		return "";
+	}
 
 	public override bool UseInteractionEventImmediateMaybe() {
 		if (grappling) {
@@ -93,93 +117,9 @@ public class PlayerGrappleController : AbstractInteractableActuator {
 		targetGrappable.PrepareForGrapple();
 		targetGrappable.myEssence.OverrideControl(this);
 	}
-
-	//private void Update() {
-	//	if (!grappling) {
-			
-	//	} else {
-	//		// IS grappling
-	//		if ( movingIntoGrapple ) {
-	//			MoveIntoIdealPosition();
-	//		//} else if (!actualGrappling) {
-	//		//	ActualPerformGrapple();
-	//		//} else
-	//		//if (Input.GetButtonDown("Interact")) {
-	//		//	StopGrapple();
-	//		}
-	//	}
-		
-	//}
-
-	//private void StartPerformGrapple(Grappable grappable) {
-	//	grappling = true;
-	//	movingIntoGrapple = true ;
-	//	targetGrappable = grappable;
-	//	targetGrappable.PrepareForGrapple();
-	//	myEssence.currentControllers.Push(this);
-	//	targetGrappable.myEssence.currentControllers.Push(this);
-	//}
-
-	///// <summary>
-	///// Take over control of the character and move them into position
-	///// </summary>
-	//private void MoveIntoGrappleUpdate() {
-		
-	//	var vector = targetGrappable.transform.position.JustXZ() - grappleTarget.position.JustXZ();
-	//	if ( vector.sqrMagnitude < positionTolerance * positionTolerance) {
-	//		movingIntoGrapple = false;
-	//	}
-	//	myEssence.MoveVector = vector.FromXZ();
-
-	//	vector = targetGrappable.transform.position.JustXZ() - transform.position.JustXZ();
-	//	myEssence.TurnVector = vector.normalized;
-		
-	//	targetGrappable.myEssence.MoveVector = Vector3.zero;
-	//	targetGrappable.myEssence.TurnVector = -vector;
-
-
-	//}
-
-	///// <summary>
-	///// Take over control of the character and move them into position
-	///// </summary>
-	//private void MoveIntoIdealPosition() {
-	//	//bool moveIntoNextPhase = false;
-
-	//	var currentVelocity = myEssence.GetCurrentVelocity();
-	//	bool withinIdealVelocity = currentVelocity.sqrMagnitude < idealInteractionVelocityTolerance * idealInteractionVelocityTolerance;
-
-	//	var vector = targetGrappable.transform.position.JustXZ() - idealInteractionPosition.position.JustXZ();
-
-	//	// if the distance from the target point to the pickup is less than a certain distance -> move into next phase
-	//	float tolerance = idealInteractionPositionTolerance * idealInteractionPositionTolerance;
-	//	bool withinIdealPosition = vector.sqrMagnitude < tolerance;
-	//	if (withinIdealPosition) {
-	//		myEssence.MoveVector = Vector3.zero;
-	//	}
-	//	else {
-	//		myEssence.MoveVector = vector.FromXZ();
-	//	}
-
-
-	//	vector = targetGrappable.transform.position.JustXZ() - transform.position.JustXZ();
-	//	myEssence.TurnVector = vector.normalized;
-
-	//	//// if the distance from us to the pickup is less than the distance to the ideal position -> move into next phase
-	//	//var idealPositionRange = (idealInteractionPosition.position.JustXZ() - transform.position.JustXZ()).sqrMagnitude;
-	//	//if (vector.sqrMagnitude < idealPositionRange) {
-	//	//	moveIntoNextPhase = true;
-	//	//}
-
-	//	if (withinIdealVelocity && withinIdealPosition) {
-	//		ActualPerformGrapple();
-	//	}
-	//}
-
+	
 	List<Component> temporaryJoints = new List<Component>();
-
-	//FixedJoint chestJoint;
-
+	
 	public float grappleJointWidth = 0.5f;
 
 	private void ActualPerformGrapple() {
@@ -373,4 +313,46 @@ public class PlayerGrappleController : AbstractInteractableActuator {
 			yield return null;
 		}
 	}
+
+	IEnumerator TweenEffectorPositionWeight(IKEffector effector, float targetWeight, float tweenSpeed) {
+		float startWeight = effector.positionWeight;
+		float t = 0;
+		float difference = targetWeight - startWeight;
+		float tweenTime = Mathf.Abs( difference ) * tweenSpeed;
+		while ( t < tweenTime) {
+			t += Time.deltaTime;
+			effector.positionWeight = Mathf.Lerp(startWeight, targetWeight, t / tweenTime);
+			yield return null;
+		}
+	}
+
+	//private void MoveIntoMissionary() {
+	//	targetGrappable.MoveIntoMissionary();
+	//	targetGrappable.transform.position = missionaryTargetPosition.position;
+
+	//	targetGrappable.ik.solver.bodyEffector.target = missionaryVictimPosition;
+	//	StartCoroutine(TweenEffectorPositionWeight(targetGrappable.ik.solver.bodyEffector, 1, .4f));
+
+	//	targetGrappable.ik.solver.rightFootEffector.target = leftHandHoldPosition;
+	//	StartCoroutine(TweenEffectorPositionWeight(targetGrappable.ik.solver.rightFootEffector, 1, .4f));
+	//	//targetGrappable.ik.solver.bodyEffector.positionWeight = 1;
+
+	//	ik.enabled = true;
+
+		
+	//	StartCoroutine(TweenEffectorPositionWeight(ik.solver.bodyEffector, 1, .4f));
+	//	//ik.solver.bodyEffector.positionWeight = 1;
+
+	//	grounder.enabled = false;
+	//	myEssence.Inform(BlackboardEventType.ManualFireAnimationTrigger, "MissionaryTop");
+
+	//	inMissionary = true;
+	//}
+
+	//private Vector3 MissionaryTopPelvisPosition() {
+	//	var outPosition = missionaryInteractionPosition.position;
+	//	var inPosition = missionaryInteractionInPosition.position;
+	//	float t = Mathf.Sin(Time.time * missionarySpeed) * 0.5f + 0.5f;
+	//	return Vector3.Lerp(outPosition, inPosition, t);
+	//}
 }

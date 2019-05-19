@@ -57,4 +57,17 @@ public class Grappable : MonoBehaviour {
 
 		myEssence.Capacitate();
 	}
+
+	//public void MoveIntoMissionary() {
+	//	Vector3 toPelvis = pelvis.position - root.position;
+	//	root.position += toPelvis;
+	//	pelvis.transform.position -= toPelvis;
+
+	//	ragdollUtility.DisableRagdoll();
+
+	//	grounder.weight = 1;
+	//	grounder.enabled = true;
+
+	//	myEssence.Inform(BlackboardEventType.MoveIntoMissionary, this);
+	//}
 }

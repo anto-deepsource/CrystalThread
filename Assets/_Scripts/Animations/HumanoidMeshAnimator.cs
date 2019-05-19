@@ -93,7 +93,17 @@ public class HumanoidMeshAnimator : AnimationHandler {
 			case BlackboardEventType.PickUpFromGround:
 				animator.SetTrigger("PickUpFromGround");
 				break;
+			case BlackboardEventType.MoveIntoMissionary:
+				animator.SetTrigger("Missionary");
+				break;
+			case BlackboardEventType.ManualFireAnimationTrigger:
+				ManualFireTrigger(data as string);
+				break;
 		}
+	}
+
+	public void ManualFireTrigger(string trigger) {
+		animator.SetTrigger(trigger);
 	}
 
 	private void GroundedCallbacks(object sender, GroundedEvent eventCode, object data) {

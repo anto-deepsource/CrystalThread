@@ -11,6 +11,8 @@ namespace Porter {
 
 		public bool on = true;
 
+		
+
 		private void OnTriggerEnter(Collider other) {
 			if ( !on ) {
 				return;
@@ -18,6 +20,8 @@ namespace Porter {
 
 			Damagable damagable = other.GetComponent<Damagable>();
 			if ( damagable!=null ) {
+
+
 				DamageSource damage = new DamageSource() {
 					amount = 3,
 					

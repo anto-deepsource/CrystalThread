@@ -11,13 +11,13 @@ public class RTSCamEditor : Editor {
 
 		EditorGUI.BeginChangeCheck();
 		DrawDefaultInspector();
-		if ( EditorGUI.EndChangeCheck() ) {
-			rts.UpdatePosition(1.0f);
-		}
+		//if ( EditorGUI.EndChangeCheck() ) {
+		//	rts.UpdatePosition(1.0f);
+		//}
 		
-		if ( GUILayout.Button("Update") ) {
-			rts.UpdatePosition(1.0f);
-		}
+		//if ( GUILayout.Button("Update") ) {
+		//	rts.UpdatePosition(1.0f);
+		//}
 
 
 	}

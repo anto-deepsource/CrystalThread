@@ -75,19 +75,25 @@ public class PlayerEquippableWeaponController : AbstractInteractableActuator {
 			}
 
 			if (nearestWeapon != null && nearestDistance < range) {
-				return new ActuatorTarget(nearestWeapon, this, nearestDistance);
+				return new ActuatorTarget(nearestWeapon, this, nearestDistance, "Pick up" );
 			}
 		}
 		return ActuatorTarget.None();
 	}
 
-	//public override bool IsBlocking() {
-	//	// if we're in the middle of a pickup -> distable other actuators
-	//	if (performingPickup) {
-	//		return true;
-	//	}
-	//	return false;
-	//}
+	public override bool IsImmediateInteraction() {
+		if (hasSomethingEquipped) {
+			return true;
+		}
+		return false;
+	}
+
+	public override string GetImmediateInteractionLabel() {
+		if (hasSomethingEquipped) {
+			return "Drop";
+		}
+		return "";
+	}
 
 	public override bool UseInteractionEventImmediateMaybe() {
 
@@ -267,7 +273,8 @@ public class PlayerEquippableWeaponController : AbstractInteractableActuator {
 
 	private void StartWeaponSwing() {
 		weaponAnimator.Play(attackAnimation);
-		currentlyEquippedWeapon.damageOnCollision = true;
+		currentlyEquippedWeapon.StartSwing();
+		//currentlyEquippedWeapon.damageOnCollision = true;
 
 	}
 }

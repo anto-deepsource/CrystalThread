@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Listens for if the user presses the 'Interact' button and attempts to handle it.
@@ -8,11 +9,20 @@ using UnityEngine;
 /// </summary>
 public class PlayerInteractableController : MonoBehaviour {
 
+	public string mainInteractionButtonName = "Interact";
+	public string mainInteractionButtonLabel = "E: ";
+
+	//public string secondaryInteractionButtonName = "Secondary Interact";
+	//public string secondaryInteractionButtonLabel = "R: ";
+
 	public UnitEssence myEssence;
 
 	public Transform idealInteractionPosition;
 	public float idealInteractionPositionTolerance = 0.2f;
 	public float idealInteractionVelocityTolerance = 0.5f;
+
+	public GameObject interactionUIIndicator;
+	public Text interactionUILabel;
 
 	public List<AbstractInteractableActuator> actuators = new List<AbstractInteractableActuator>();
 
@@ -22,20 +32,19 @@ public class PlayerInteractableController : MonoBehaviour {
 	void Update () {
 		if (movingIntoIdealPosition) {
 			MoveIntoIdealPosition();
-		} else
-		if (Input.GetButtonDown("Interact")) {
-			StartInteractionMaybe();
+		}
+		else {
+			UpdateBestTarget();
+			UpdateImmediateInteraction();
+
+			if (Input.GetButtonDown(mainInteractionButtonName)) {
+				StartInteractionMaybe();
+			}
 		}
 	}
 	
 	private void StartInteractionMaybe() {
-		//// check if any of the actuators are currently blocking the others
-		//foreach (var actuator in actuators) {
-		//	if (actuator.IsBlocking()) {
-		//		return;
-		//	}
-		//}
-
+		
 		// give any actuators a chance to immediately use the interaction before we look for nearby interactables
 		foreach (var actuator in actuators) {
 			if (actuator.UseInteractionEventImmediateMaybe()) {
@@ -43,6 +52,13 @@ public class PlayerInteractableController : MonoBehaviour {
 			}
 		}
 
+		if (!currentBestTarget.IsNone()) {
+			StartMoveIntoIdealPosition();
+			//currentBestTarget.actuator.UseInteractionBestTargetEvent(currentBestTarget.target);
+		}
+	}
+
+	private void UpdateBestTarget() {
 		// look for nearby interactables and go with the best one (if any)
 		currentBestTarget = ActuatorTarget.None();
 
@@ -61,9 +77,23 @@ public class PlayerInteractableController : MonoBehaviour {
 			}
 		}
 
-		if (!currentBestTarget.IsNone()) {
-			StartMoveIntoIdealPosition();
-			//currentBestTarget.actuator.UseInteractionBestTargetEvent(currentBestTarget.target);
+		if ( currentBestTarget.IsNone() ) {
+			interactionUIIndicator.SetActive(false);
+		} else {
+			interactionUIIndicator.SetActive(true);
+			interactionUILabel.text = mainInteractionButtonLabel + currentBestTarget.label;
+		}
+	}
+
+	private void UpdateImmediateInteraction() {
+		// check if any of the actuators are currently blocking the others
+		foreach (var actuator in actuators) {
+			if (actuator.IsImmediateInteraction()) {
+				// this will override the best target label
+				interactionUIIndicator.SetActive(true);
+				interactionUILabel.text = mainInteractionButtonLabel + actuator.GetImmediateInteractionLabel();
+				return;
+			}
 		}
 	}
 
@@ -119,11 +149,13 @@ public struct ActuatorTarget {
 	public MonoBehaviour target;
 	public AbstractInteractableActuator actuator;
 	public float distance;
+	public string label;
 
-	public ActuatorTarget(MonoBehaviour target, AbstractInteractableActuator actuator, float distance) {
+	public ActuatorTarget(MonoBehaviour target, AbstractInteractableActuator actuator, float distance, string label) {
 		this.target = target;
 		this.actuator = actuator;
 		this.distance = distance;
+		this.label = label;
 	}
 
 	public static ActuatorTarget None() {
@@ -139,7 +171,9 @@ public struct ActuatorTarget {
 
 public abstract class AbstractInteractableActuator : MonoBehaviour {
 
-	//abstract public bool IsBlocking();
+	abstract public bool IsImmediateInteraction();
+
+	abstract public string GetImmediateInteractionLabel();
 
 	abstract public bool UseInteractionEventImmediateMaybe();
 

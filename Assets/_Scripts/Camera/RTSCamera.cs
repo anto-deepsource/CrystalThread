@@ -4,34 +4,45 @@ using UnityEngine;
 
 public class RTSCamera : MonoBehaviour {
 
-	public float smoothing = 5f;
-	public Vector3 offset = new Vector3(0.0f, 15.0f, -22.0f);
+	public float translationScale = 10;
 	public Camera controlledCamera;
-	public Transform target;
 
-	// Use this for initialization
+	private Vector3 targetPosition;
+
 	void Start () {
 		if ( controlledCamera == null ) {
 			controlledCamera = Camera.main;
 		}
+
+		targetPosition = controlledCamera.transform.position;
 	}
 	
-	// Update is called once per frame
 	void Update () {
-		
+		UpdateMouseInput();
+		UpdatePosition();
+	}
+	
+	private void UpdateMouseInput() {
+		if (Input.GetMouseButtonDown(2)) {
+			Cursor.lockState = CursorLockMode.Locked;
+		}
+		if (Input.GetMouseButton(2)) {
+			var mouseX = Input.GetAxis("Mouse X");
+			var mouseY = Input.GetAxis("Mouse Y");
+
+			targetPosition.x -= mouseX * translationScale;
+			targetPosition.z -= mouseY * translationScale;
+		}
+		if (Input.GetMouseButtonUp(2)) {
+			Cursor.lockState = CursorLockMode.None;
+		}
 	}
 
-	// called after every physics update
-	void FixedUpdate(){
-		//Transform playerTransform = PlayerManager.GetPlayer().transform;
-		UpdatePosition(smoothing * Time.deltaTime);
-	}
+	public void UpdatePosition() {
+		Vector3 targetCamPos = targetPosition;
 
-	public void UpdatePosition( float smooth) {
-		Vector3 targetCamPos = target.position + offset;
+		controlledCamera.transform.position = Vector3.Lerp(controlledCamera.transform.position, targetCamPos, 0.5f);
 
-		controlledCamera.transform.position = Vector3.Lerp(controlledCamera.transform.position, targetCamPos, smooth);
-
-		controlledCamera.transform.LookAt(target);
+		//controlledCamera.transform.LookAt(target);
 	}
 }

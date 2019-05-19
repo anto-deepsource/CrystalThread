@@ -349,4 +349,6 @@ public enum BlackboardEventType {
 	Grappling = 1 << 16,
 	StopGrappling = 1 << 17,
 	PickUpFromGround = 1 << 18,
+	MoveIntoMissionary = 1 << 19,
+	ManualFireAnimationTrigger = 1 << 20,
 }
