@@ -59,8 +59,10 @@ public class Spawner : MonoBehaviour {
 		GameObject spawn = Object.Instantiate(prefabObject, parentFolder.transform);
 		spawn.SetActive(true);
 
-		Vector3 position = HexNavMeshManager.GetAnyPointInArea(transform.position, radius);
-		position = HexNavMeshManager.WorldPosToWorldPosWithGround(position);
+		//Vector3 position = HexNavMeshManager.GetAnyPointInArea(transform.position, radius);
+		//position = HexNavMeshManager.WorldPosToWorldPosWithGround(position);
+		Vector3 position = transform.position + Random.insideUnitCircle.FromXZ() * radius;
+
 		spawn.transform.position = position;
 
 		Vector3 scale = initialScale;

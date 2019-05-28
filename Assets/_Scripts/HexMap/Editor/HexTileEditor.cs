@@ -44,9 +44,9 @@ namespace HexMap {
 		}
 		public void OnSceneGUI() {
 			HexTile tile = target as HexTile;
-			
-			if ( drawDebugTriangles) {
-				foreach (var triangle in tile.triangles) {
+			tile.BuildNavMesh();
+			if ( drawDebugTriangles && tile.navChunk.NavMeshBuilt) {
+				foreach (var triangle in tile.navChunk.triangles) {
 					var points = new Vector3[3];
 
 					var centroid = triangle.Centroid();
@@ -60,7 +60,7 @@ namespace HexMap {
 							points[i] = points[i] + direction * 0.3f;
 						}
 						points[i] = HexNavMeshManager.WorldPosToWorldPosWithGround(points[i]);
-						
+
 						//points[i] = tile.transform.TransformPoint(points[i]);
 					}
 
@@ -78,8 +78,8 @@ namespace HexMap {
 							}
 						}
 					}
-					
-					if ( draweConstrainedEdges) {
+
+					if (draweConstrainedEdges) {
 						// draw a line on each of the constrained edges
 						Handles.color = new Color(1, 0, 0, 0.8f);
 
@@ -96,7 +96,7 @@ namespace HexMap {
 							}
 						}
 					}
-					
+
 				}
 			}
 

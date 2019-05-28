@@ -38,7 +38,7 @@ namespace HexMap {
 
 		private HexagonMaker maker;
 
-		private HexMaze hexMaze;
+		//private HexMaze hexMaze;
 		
 		[SerializeField]
 		private HexWallTableBool isWallTable = new HexWallTableBool();
@@ -77,7 +77,7 @@ namespace HexMap {
 
 		// Use this for initialization
 		void Start() {
-			hexMaze = GetComponent<HexMaze>();
+			//hexMaze = GetComponent<HexMaze>();
 			maker = GetComponent<HexagonMaker>();
 			GameObject player;
 			if (QueryManager.GetPlayer(out player)) {
@@ -119,23 +119,21 @@ namespace HexMap {
 					HexTile tile = tileTable.Get(coords);
 					tile?.AddStaticObstacle(shape);
 				}
-
-				
 			}
 		}
 
-		public void GenerateStartArea() {
-			hexMaze = GetComponent<HexMaze>();
-			maker = GetComponent<HexagonMaker>();
-			maker.ClearAllTiles();
+		//public void GenerateStartArea() {
+		//	hexMaze = GetComponent<HexMaze>();
+		//	maker = GetComponent<HexagonMaker>();
+		//	maker.ClearAllTiles();
 
-			isWallTable = hexMaze.GetWallTable();
+		//	isWallTable = hexMaze.GetWallTable();
 
-			maker.GenerateTilesAt(0,0,Metrics.radius);
-		}
+		//	maker.GenerateTilesAt(0,0,Metrics.radius);
+		//}
 
 		public void RemakeTiles() {
-			hexMaze = GetComponent<HexMaze>();
+			//hexMaze = GetComponent<HexMaze>();
 			maker = GetComponent<HexagonMaker>();
 			maker.ClearAllTiles();
 
@@ -144,28 +142,28 @@ namespace HexMap {
 			maker.GenerateTilesAt(0, 0, Metrics.radius);
 		}
 
-		public void GenerateMaze(int column, int row, int radius) {
+		//public void GenerateMaze(int column, int row, int radius) {
 
-			isWallTable.BeginChangeCheck();
-			hexMaze.GenerateMaze(isWallTable, column, row, radius);
-			Events.Fire(MapEvent.WallTableChanged, null);
+		//	isWallTable.BeginChangeCheck();
+		//	hexMaze.GenerateMaze(isWallTable, column, row, radius);
+		//	Events.Fire(MapEvent.WallTableChanged, null);
 
-			foreach( var pos in isWallTable.EndChangeCheck() ) {
+		//	foreach( var pos in isWallTable.EndChangeCheck() ) {
 				
-				HexTile currentTile;
-				if ( tileTable.TryGet(pos, out currentTile ) ) {
-					Destroy(currentTile.gameObject);
+		//		HexTile currentTile;
+		//		if ( tileTable.TryGet(pos, out currentTile ) ) {
+		//			Destroy(currentTile.gameObject);
 
-					HexTile hexTile = maker.GenerateTile(pos.x, pos.y);
-					hexTile.staticObstacles = currentTile.staticObstacles;
+		//			HexTile hexTile = maker.GenerateTile(pos.x, pos.y);
+		//			hexTile.staticObstacles = currentTile.staticObstacles;
 
-					tileTable.Set(pos, hexTile);
-				}
+		//			tileTable.Set(pos, hexTile);
+		//		}
 				
-				globalNodeTable.Remove(pos);
-			}
+		//		globalNodeTable.Remove(pos);
+		//	}
 			
-		}
+		//}
 
 		// Update is called once per frame
 		void Update() {
@@ -297,7 +295,7 @@ namespace HexMap {
 			while (playerCoords.x - minColumn > destroyDistance) {
 				foreach( var tile in tileTable.RemoveColumn(minColumn) ) {
 					maker.ReturnTileToPool(tile);
-					//Destroy(tile.gameObject);
+					Destroy(tile.gameObject);
 				}
 				minColumn++;
 			}
@@ -307,7 +305,7 @@ namespace HexMap {
 			while (maxColumn - playerCoords.x > destroyDistance) {
 				foreach (var tile in tileTable.RemoveColumn(maxColumn)) {
 					maker.ReturnTileToPool(tile);
-					//Destroy(tile.gameObject);
+					Destroy(tile.gameObject);
 				}
 				maxColumn--;
 			}
@@ -317,7 +315,7 @@ namespace HexMap {
 			while (playerCoords.y - bottomRow > destroyDistance) {
 				foreach (var tile in tileTable.RemoveRow(bottomRow)) {
 					maker.ReturnTileToPool(tile);
-					//Destroy(tile.gameObject);
+					Destroy(tile.gameObject);
 				}
 				bottomRow++;
 			}
@@ -327,7 +325,7 @@ namespace HexMap {
 			while (topRow - playerCoords.y > destroyDistance) {
 				foreach (var tile in tileTable.RemoveRow(topRow)) {
 					maker.ReturnTileToPool(tile);
-					//Destroy(tile.gameObject);
+					Destroy(tile.gameObject);
 				}
 				topRow--;
 			}
@@ -337,7 +335,7 @@ namespace HexMap {
 			while (z - minZ > destroyDistance) {
 				foreach (var tile in tileTable.RemoveZ(minZ)) {
 					maker.ReturnTileToPool(tile);
-					//Destroy(tile.gameObject);
+					Destroy(tile.gameObject);
 				}
 				minZ++;
 			}
@@ -347,7 +345,7 @@ namespace HexMap {
 			while (maxZ - z > destroyDistance) {
 				foreach (var tile in tileTable.RemoveZ(maxZ)) {
 					maker.ReturnTileToPool(tile);
-					//Destroy(tile.gameObject);
+					Destroy(tile.gameObject);
 				}
 				maxZ--;
 			}
@@ -497,7 +495,7 @@ namespace HexMap {
 			// Check each other edge and create unidirectional connections between all applicable
 			foreach ( var dir in HexDirectionUtils.All() ) {
 				// don't connect to any walls
-				if ( IsWallAt( pos, dir)) {
+				if (IsWallAt(pos, dir)) {
 					continue;
 				}
 				// create a new edge
@@ -518,14 +516,15 @@ namespace HexMap {
 				//throw new SystemException("TODO");
 				return null;
 			}
+			
 			// if this is the first time we've done local pathing on this tile then its
 			// nav mesh hasn't been built yet
-			if ( !tile.NavMeshBuilt ) {
+			if (!tile.navChunk.NavMeshBuilt) {
 				tile.BuildNavMesh();
 			}
 
 			// if the tile has no triangles then there's not much we can do
-			if ( tile.triangles == null || tile.triangles.Count==0) {
+			if (tile.navChunk.triangles == null || tile.navChunk.triangles.Count == 0) {
 				//throw new SystemException("TODO");
 				return null;
 			}
@@ -534,11 +533,12 @@ namespace HexMap {
 			DelaunayTriangle closestTriangle = null;
 
 			// get the triangle on that tile that contains the given point
-			foreach( var triangle in tile.triangles ) {
+			foreach (var triangle in tile.navChunk.triangles) {
 				var point = new Poly2Tri.TriangulationPoint(pos.x, pos.z).AsVector2();
-				if (ColDet.PointInTriangle( triangle, point) ) {
+				if (ColDet.PointInTriangle(triangle, point)) {
 					return GetLocalNodeByTriangle(triangle);
-				} else {
+				}
+				else {
 					// Next best option is to come back with the triangle closest to the given point
 					// we can do this by finding the closest point on the triangle to the given point
 					float distance = ColDet.DistanceToClosestPointOnTriangle(triangle, point);
@@ -550,7 +550,7 @@ namespace HexMap {
 				}
 			}
 
-			if ( closestTriangle==null) {
+			if (closestTriangle == null) {
 				throw new SystemException("Closest Triangle was null");
 			}
 

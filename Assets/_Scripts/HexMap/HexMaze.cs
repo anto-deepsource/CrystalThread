@@ -105,12 +105,12 @@ namespace HexMap {
 			}
 			switch ((BubbleEvent)eventCode) {
 				case BubbleEvent.NewBubble:
-					if (UnityEngine.Random.value < newMazeChance) {
-						Bubble newBubble = data as Bubble;
-						Vector2Int pos = hexMap.WorldPositionToAxialCoords(newBubble.center.FromXZ());
-						int radius = Mathf.FloorToInt(newBubble.radius / (hexMap.Metrics.tileSize * 3f));
-						hexMap.GenerateMaze(pos.x, pos.y, radius);
-					}
+					//if (UnityEngine.Random.value < newMazeChance) {
+					//	Bubble newBubble = data as Bubble;
+					//	Vector2Int pos = hexMap.WorldPositionToAxialCoords(newBubble.center.FromXZ());
+					//	int radius = Mathf.FloorToInt(newBubble.radius / (hexMap.Metrics.tileSize * 3f));
+					//	hexMap.GenerateMaze(pos.x, pos.y, radius);
+					//}
 					
 					break;
 			}

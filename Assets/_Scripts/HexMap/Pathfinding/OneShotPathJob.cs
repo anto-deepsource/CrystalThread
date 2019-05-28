@@ -101,6 +101,8 @@ namespace HexMap.Pathfinding {
 
 			// if the start node or end node is null then there's not much we can do
 			if (startNode == null || endNode == null) {
+				Debug.Log("Path failure: no start or end" );
+
 				CompletePathFailure();
 			}
 			else
@@ -208,6 +210,8 @@ namespace HexMap.Pathfinding {
 			// If we haven't successfully found a path yet then there isn't one
 			// This will only happen if the agent is surrounded by walls relative to the destination
 			if (openList.Count == 0) {
+				Debug.Log("Path failure: empty open list");
+
 				CompletePathFailure();
 				return false;
 			}
@@ -234,6 +238,7 @@ namespace HexMap.Pathfinding {
 
 		private void CompletePathFailure() {
 			Status = PathStatus.Failed;
+			OnComplete?.Invoke(PathJobResult<T>.None());
 			// TODO: notify listeners of failure
 		}
 		

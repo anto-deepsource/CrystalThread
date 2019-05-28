@@ -26,17 +26,17 @@ namespace HexMap {
 
 			}
 
-			if (GUILayout.Button("Make Maze")) {
+			//if (GUILayout.Button("Make Maze")) {
 				
-				if ( !Application.isPlaying ) {
+			//	if ( !Application.isPlaying ) {
 					
-					hexMap.GenerateStartArea();
-					UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-				} else {
-					hexMap.GenerateMaze(0,0,1);
-				}
+			//		hexMap.GenerateStartArea();
+			//		UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
+			//	} else {
+			//		hexMap.GenerateMaze(0,0,1);
+			//	}
 
-			}
+			//}
 
 			if (GUILayout.Button("Fill Tile Table")) {
 				hexMap.FillHexTileTable();
