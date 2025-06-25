@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "dependencies": {
+    "Any,Version=v0.0": {
+      "RBush": {
+        "type": "Direct",
+        "requested": "[2.0.41, 2.0.41]",
+        "resolved": "2.0.41",
+        "contentHash": "6ErpxOeOKFb4JgB8D6n0cSVNHuRzTH+jKsa4y43b3BZA7jYYXgdawWBx+tWF89WRcfWH4E/fbX+2sfw9tbwFtQ=="
+      },
+      "System.Collections.Immutable": {
+        "type": "Direct",
+        "requested": "[1.3.0, 1.3.0]",
+        "resolved": "1.3.0",
+        "contentHash": "zukBRPUuNxwy9m4TGWLxKAnoiMc9+B+8VXeXVyPiBPvOd7yLgAlZ1DlsRWJjMx4VsvhhF2+6q6kO2GRbPja6hA=="
+      }
+    }
+  }
+}
